@@ -5,29 +5,685 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="http://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src="socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
+<style>
+ #searcheduser::-webkit-scrollbar{
+        display: none;
+
+    }
+    #ulingredients li{
+        display: inline;
+
+    }
+     ul::-webkit-scrollbar{
+        display: none;
+
+    }
+    
+</style>
 <body>
-    <h1>
-        Main content here 
-    </h1>
-    <ul>
-        <li>{{user.name}}</li>
-    </ul>
-    <button id="btn">Logout</button>
+    <!-- {{!-- Heading div to display name of the website and greetings --}} -->
+   <div id="divheading" style=" height: 100px;text-align: center;font-size: 30pt;font-weight: bold;font-family: sans-serif;border-bottom: 1px solid black;">Welcome To Somerandomname.com</div>
+   <!-- {{!-- Sidebar div to display myfriends myrecipes add friends and recipes .etc --}} -->
+<div id="divsidebar" style="width: 300px;border-right: 2px solid black;display: inline-block;">
+    <!-- {{!-- user info --}} -->
+    <div id="divuserinfo" style="border-bottom: 2px solid black;padding: 10px;font-family: sans-serif;font-size: 12pt;font-weight: bold;">
+       Signed in as <t id="currentuser">{{userinfo.name}}</t> 
+        <img src="{{userinfo.image}}" style="height: 40px;width: 40px;border-radius: 50%;">
+    </div>
+    <!-- {{!-- add new recipe --}} -->
+    <div id="addnewrecipe" style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;">
+     Add New Recipe &nbsp;<button id="btnaddnewrecipe"class="btn btn-info btn-sm" ><svg class="bi bi-plus" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"/>
+          </svg></button>
+
+    </div>
+    <!-- {{!-- add new friend --}} -->
+    <div id="addnewfriend" style="border-bottom: 2px solid black;padding: 10px;">
+        <div class="input-group flex-nowrap">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="addon-wrapping">@</span>
+            </div>
+            <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="addon-wrapping" id="inpfriendusername">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="btnaddnewfriend"><svg class="bi bi-person-plus-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 100-6 3 3 0 000 6zm7.5-3a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 010-1H13V5.5a.5.5 0 01.5-.5z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M13 7.5a.5.5 0 01.5-.5h2a.5.5 0 010 1H14v1.5a.5.5 0 01-1 0v-2z" clip-rule="evenodd"/>
+                  </svg></button>
+              </div>
+          </div>
+  
+    <div id="searcheduser" style="overflow-y: scroll;max-height:100px; ">
+       
+        
+    </div>
+</div>
+<!-- {{!-- My friends --}} -->
+<div id="myfriends" style="border-bottom: 2px solid;font-family:monospace;padding: 10px;font-size: 15pt;text-align: center;">My Friends&nbsp;<svg class="bi bi-people-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 100-6 3 3 0 000 6zm-5.784 6A2.238 2.238 0 015 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 005 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd"/>
+  </svg></div>
+  <!-- {{!-- My favourites --}} -->
+  <div id="myfavourites" style="border-bottom: 2px solid black;font-size: 15pt;font-family: monospace;padding: 10px;text-align: center;">
+My Favourites&nbsp;<svg class="bi bi-star-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+  </svg>
+</div>
+<!-- {{!-- My recipes --}} -->
+<div id="myrecipes" style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;">
+My Recipes&nbsp;<svg class="bi bi-book" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" d="M3.214 1.072C4.813.752 6.916.71 8.354 2.146A.5.5 0 018.5 2.5v11a.5.5 0 01-.854.354c-.843-.844-2.115-1.059-3.47-.92-1.344.14-2.66.617-3.452 1.013A.5.5 0 010 13.5v-11a.5.5 0 01.276-.447L.5 2.5l-.224-.447.002-.001.004-.002.013-.006a5.017 5.017 0 01.22-.103 12.958 12.958 0 012.7-.869zM1 2.82v9.908c.846-.343 1.944-.672 3.074-.788 1.143-.118 2.387-.023 3.426.56V2.718c-1.063-.929-2.631-.956-4.09-.664A11.958 11.958 0 001 2.82z" clip-rule="evenodd"/>
+    <path fill-rule="evenodd" d="M12.786 1.072C11.188.752 9.084.71 7.646 2.146A.5.5 0 007.5 2.5v11a.5.5 0 00.854.354c.843-.844 2.115-1.059 3.47-.92 1.344.14 2.66.617 3.452 1.013A.5.5 0 0016 13.5v-11a.5.5 0 00-.276-.447L15.5 2.5l.224-.447-.002-.001-.004-.002-.013-.006-.047-.023a12.582 12.582 0 00-.799-.34 12.96 12.96 0 00-2.073-.609zM15 2.82v9.908c-.846-.343-1.944-.672-3.074-.788-1.143-.118-2.387-.023-3.426.56V2.718c1.063-.929 2.631-.956 4.09-.664A11.956 11.956 0 0115 2.82z" clip-rule="evenodd"/>
+  </svg>
+</div>
+<!-- {{!-- Logout --}} -->
+<div id="btnlogout" style="border-bottom: 2px solid black;font-size: 15pt;font-family: monospace;text-align: center;padding: 10px;">
+Logout&nbsp;
+  
+</div>
+
+</div>
+  <!-- sidebardiv end  -->
+
+ <!-- {{!-- Main Div starts --}} -->
+  <div id="main" style="position: fixed;display: inline-block;">
+       <!-- div to add new recipe -->
+  <div id="divaddnewrecipe" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 800px;position: fixed;padding-top: 10px ;overflow-y: scroll;">
+    <form method="POST" enctype="multipart/form-data" id="frmaddrecipe" class="form-inline">
+        &nbsp;&nbsp;
+       <input class="form-control" placeholder="Name Of The Dish" id="inpnameofdish" style="width: 200px;" name="nameofdish"> &nbsp;&nbsp;&nbsp;
+       <select id="cuisine">
+           <option selected>Cuisine</option>
+           <option>North Indian</option>
+           <option>South Indian</option>
+           <option>Italian</option>
+           <option>Chinese</option>
+    
+       </select>&nbsp;&nbsp;
+       <input type="radio" id="inpveg" name="q" value="Veg" class="typeoffood">Veg &nbsp;    <input type="radio" class="typeoffood" id="inpnonveg" name="q" value="Non Veg">Non Veg
+    <input class="form-control" placeholder="Ingredient" id="inpingredient"  style="margin-top: 10px;margin-left: 10px;"><input style="margin-top: 10px;margin-left: 10px;" class="form-control" placeholder="Quantity" type="number" id="inpquantity">
+    <select id="unit" style="width: 60px;height: 30px;margin-top: 10px;margin-left: 10px;" >
+        <option selected >L t</option>
+        <option>gm</option>
+        <option>kg</option>
+        <option>teaspoon</option>
+        <option>Peices</option>
+        <option>ml</option>
+        <option>tablespoon</option>
+        <option>cup</option>
+        <option>pint</option>
+        <option>quart</option>
+        <option>mg</option>
+        <option>mm</option>
+        <option>cm</option>
+        <option>m</option>
+        <option>inch</option>
+        <option>dozen</option>
+
+    </select>
+    <button class="btn btn-secondary" id="btnaddtolist" style="margin-left: 10px;margin-top: 10px;" type="button" >Add</button>
+     <ul id="ulingredients" style="height: 100px;width: 550px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;">
+
+     </ul>
+    <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethod" style="margin-top: 5px;margin-left: 10px;width: 550px;">
+  
+    <ol id="olsteps" style="margin-top:10px;margin-left: 10px;width: 550px;"></ol><br>
+
+    <div class="input-group mb-3" style="margin-left: 10px;">
+        <div class="custom-file">
+
+          <input type="file" name="recipeimage" class="custom-file-input" id="inprecipeimage" accept=".jpg,.png,.jpeg" style="width: 400px;">
+          <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">Upload An Image</label>
+        </div>
+        <div class="input-group-append">
+            <button type="button" class="btn btn-info" id="btnupload">Upload <svg class="bi bi-card-image" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5zm-13-1A1.5 1.5 0 000 3.5v9A1.5 1.5 0 001.5 14h13a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0014.5 2h-13z" clip-rule="evenodd"/>
+                <path d="M10.648 7.646a.5.5 0 01.577-.093L15.002 9.5V13h-14v-1l2.646-2.354a.5.5 0 01.63-.062l2.66 1.773 3.71-3.71z"/>
+                <path fill-rule="evenodd" d="M4.502 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/>
+              </svg></button><input type="submit" value="Share" id="share" class="btn btn-success"> 
+              </div>
+    </div>
+   
+<div id="showimage" style="height: 300px;width: 200px;margin-left: 200px;display: inline-block;">
+
+</div>
+ 
+
+    
+    
+    </form>
+
+
+
+
+
+</div>
+<!-- {{!-- Div to add new recipe end --}} -->
+
+<!-- {{!-- Div to show posts of friends --}} -->
+
+<div id="divposts" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 500px;padding-top: 10px ;overflow-y: scroll;">
+
+
+
+</div>
+
+<div id="divmyposts" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 500px;padding-top: 10px ;overflow-y: scroll;">
+
+    
+</div>
+
+</div>
+       
+
+  
+
+    
+   
+
+ 
+ 
 
     <script>
-        $('#btn').click(()=>{
-    $.post('/logout',(data)=>{
+
+        const socket = io()
+        socket.emit('loggedin',{username : $('#currentuser').text()})
+        socket.emit('getfriends',{username:$('#currentuser').text() })
+        
+
+    
+        $('#divaddnewrecipe').hide()
+      let currentuser = $('#currentuser').text()
+  
+            let userlist = []
+            let friendlist =[]
+           
+           
+// get all users for search purpose for adding friends            
+$.post('/getallusers',(data)=>{
+    console.log(data)
+    for(let i=0;i<data.length;i++){
+        let name = data[i].split("=")[0]
+        let image = data[i].split("=")[1]
+userlist.push({id: name , ext : image})
+    $('#searcheduser').append($(`
+<div id="div${name}" style="text-align:center;display:none;" class="append">${name}<img src = "${image}" style="height:40px;width:40px;border-radius:50%;" ></div>
+    
+    `))
+    }
+
+})
+$('#searcheduser').on("click","div",function(){
+    $('#inpfriendusername').val($(this).text())
+    $('#searcheduser').hide()
+})
+$('#searcheduser').hide()
+
+$('#inpfriendusername').keypress((e)=>{
+    $('#searcheduser').show()
+    
+    let length = $('#inpfriendusername').val().length
+        console.log(length)
+
+    for(let i=0;i<userlist.length;i++){
+        if(userlist[i].id == currentuser){
+            continue
+            
+        }
+        else{
+
+        
+        if(userlist[i].id.slice(0,length+1) == $('#inpfriendusername').val()+e.key){
+         
+            $('#div'+userlist[i].id).show()
+
+        }else{
+            $('#div'+userlist[i].id).hide()
+            continue
+        }
+    }
+    }
+})
+
+
+$('#inpfriendusername').keydown((e)=>{
+if(e.which == 8){
+    
+    if($('#inpfriendusername').val().length == 1){
+       $('.append').hide()
+       $('#searcheduser').hide()
+    }
+   
+
+}
+})
+
+let count = 0
+$('#addnewrecipe').click(()=>{
+    count++
+    if(count%2==0){
+        $('#divaddnewrecipe').hide()
+    }else{
+        $('#divaddnewrecipe').show()
+    }
+    
+})
+// adding friends
+$('#btnaddnewfriend').click(()=>{
+    if($('#inpfriendusername').val().length==0){
+        return
+    }else if(friendlist.indexOf($('#inpfriendusername').val())!=-1){
+        alert($('#inpfriendusername').val() + " is already your friend")
+    }
+    else{
+ $.post('/addfriend',{
+        username : currentuser,
+        friendname : $('#inpfriendusername').val()
+    },(data)=>{
+        if(data == "Added"){
+            friendlist.push($('#inpfriendusername').val())
+            
+            alert("Added Friend " + $('#inpfriendusername').val())
+            $('#inpfriendusername').val("")
+
+            return
+        }else if(data=="Failed"){
+            alert("No such User Exists")
+             $('#inpfriendusername').val("")
+            return
+        }
+
+    })
+    }
+   
+})
+
+
+// creating a recipe
+
+
+$('#share').hide()
+
+$('#btnaddtolist').click(()=>{
+   
+let Ingredient = $('#inpingredient').val()
+let Quantity = $('#inpquantity').val()
+let unit =  $('#unit option:selected').val()
+
+
+
+if(Ingredient == "" || Quantity== ""){
+    return
+}
+    $('#ulingredients').append($(`
+    <li>${Ingredient}(${Quantity} ${unit})   </li>
+    `))
+    $('#inpingredient').val("")
+    $('#inpquantity').val("")
+
+    
+
+})
+
+$('#inpmethod').keypress((e)=>{
+    if(e.which == 13){
+        e.preventDefault()
+        let step = $('#inpmethod').val()
+        $('#olsteps').append($(`
+        <li>${step}</li>
+        `))
+        $('#inpmethod').val("")
+    }
+})
+$('#inpingredient').keypress((e)=>{
+    if(e.which == 13){
+        e.preventDefault()
+       
+    }
+})
+$('#inpquantity').keypress((e)=>{
+    if(e.which == 13){
+        e.preventDefault()
+       
+    }
+})
+
+
+$("#ulingredients").on("click","li",function() {
+    $(this).remove();
+})
+$("#olsteps").on("click","li",function() {
+    $(this).remove();
+})
+let btnuploadcount = 0
+$('#btnupload').click(()=>{
+    btnuploadcount++
+    console.log(btnuploadcount)
+    
+    let file = $('#inprecipeimage')[0].files[0]
+
+const source = URL.createObjectURL(file);
+$('#showimage').append($(`
+<img src="${source}"  class="img-fluid" alt="Responsive image">
+`))
+$('#share').show()
+btnuploadcount=0
+
+})
+$('#showimage').on("click","img",function(e){
+    e.stopPropagation();
+    $(this).remove()
+    $('#inprecipeimage').val("")
+    $('#share').hide()
+    console.log($('#inprecipeimage').val())
+    
+})
+
+
+
+
+  $('#frmaddrecipe').submit(function(e){
+      e.preventDefault()
+let ingredients = []
+let steps = []
+let cuisine = $('#cuisine option:selected').val()
+let type = $("input:checked").val()
+      var formData = new FormData(this)
+$('#ulingredients li').each(function(index){
+    ingredients.push($(this).text())
+})
+$('#olsteps li').each(function(index){
+    steps.push($(this).text())
+})
+if(ingredients.length ==0 || ingredients.length == 1){
+    alert("There should be atleast 2 ingredients")
+    return
+}
+if(steps.length ==0 || steps.length ==1){
+    alert("Method should contain atleast 2 steps")
+    return
+}
+for(let i=0;i<ingredients.length;i++){
+    formData.append("ingredients",ingredients[i])
+}
+for(let i=0;i<steps.length;i++){
+    formData.append("steps",steps[i])
+}
+
+
+formData.append("cuisine",cuisine)
+formData.append("type",type)
+formData.append("username",currentuser)
+
+console.log(formData.getAll("ingredients"))
+console.log(formData.getAll("steps"))
+console.log(formData.get("cuisine"))
+console.log(formData.get("nameofdish"))
+console.log(formData.get("type"))
+$.ajax({
+    url: '/addrecipe',
+    type: 'POST',
+    data: formData,
+    success: function(data){
+        alert(data)
+
+    },
+   catch: false,
+contentType: false,
+     processData: false
+
+
+})
+
+
+
+      
+  })
+
+// show posts of friends
+
+ socket.on('gotfriends',(data)=>{
+     for(let i=0;i<data.length;i++){
+         friendlist.push(data[i])
+     }
+               socket.emit('getrecipesoffriends',data)
+            })
+
+
+
+
+
+
+
+socket.on('foundrecipes',(data)=>{
+for(let i=0;i<data.length;i++){
+  
+    socket.emit('getrecipe',data[i])
+}
+
+})
+
+
+
+
+ 
+
+
+socket.on('foundrecipe',(data)=>{
+    console.log(data)
+    
+     $('#divposts').append($(`
+    <div class="divname${data.id}" style="font-size:15pt;font-family: monospace">${data.Uploader}</div>
+        <div class="divtime${data.id}" style="font-size:12pt;font-family: monospace">${data.Time}</div>
+            <div class="divrecipe${data.id}" style="font-size:15pt;font-family: monospace">${data.NameOfDish}</div>
+    `))
+    let arrayofsteps = data.Method.split(",")
+    let arrayofingredients = data.Ingredients.split(",")
+    $('#divposts').append($(`
+    
+    <t style="font-family:monospace;font-size:15pt">Ingredients:</t><ul class="ulingredients${data.id}">
+        </ul>
+    `))
+    for(let i=0;i<arrayofingredients.length;i++){
+$('.ulingredients'+data.id).append($(`<li style="font-family:monospace;font-size:12pt">${arrayofingredients[i]} </li>`))
+    }
+  
+  $('#divposts').append($(`
+   
+        <t style="font-size:15pt;font-family:monospace;">Recipe:</t><ol class="ulmethod${data.id}">
+            </ol>
+            `))
+
+for(let i=0;i<arrayofsteps.length;i++){
+    $('.ulmethod'+data.id).append($(`<li>${arrayofsteps[i]}</li>`))
+      
+}
+$('#divposts').append($(`<img src="${data.Image}" style="height:300px;width:300px;"></img>`))
+ 
+$('#divposts').append($(`
+<div class="commentbox${data.id}" style="height:200px;border:2px solid black;">
+    <t>Comments</t>
+    <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;">
+        </ul>
+        <input class="inpcomment${data.id}">
+        <button class="btncomment${data.id}" onclick="Send(this)">SEND</button>
+        </div>
+
+`))
+   
+  /*{{!-- socket.emit('getcomments',{recipeid: data.id})
+  socket.on('gotcomments',(data)=>{
+      $('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${data.comment}</li>`))
+  }) --}}*/
+    
+    $.post('/getcomments',{id : data.id},(data)=>{
         console.log(data)
-        if(data=="done"){
-            window.location.replace('/')
+        for(let i=0;i<data.length;i++){
+            $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}">${data[i].Sender} : ${data[i].Comment}</li>`))
         }
     })
    
- })
+    
+})
 
 
-    </script>
+// comments
+
+function Send(obj){
+    let id = $(obj).attr('class')
+    console.log(id)
+     id = id.split("btncomment")[1]
+    $('.comments'+id).append($(`<li>${currentuser} : ${$('.inpcomment'+id).val()}</li>`))
+    socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
+    sender : currentuser,
+    owner : $('.divname'+id).text(),
+    recipeid : id
+    })
+}
+socket.on('commentreceive',(data)=>{
+    console.log("djkjsdjsd" + data.msg + '-' + data.id)
+     $('.comments'+data.recipeid).append($(`<li  id="${data.id}"a>${data.sender} : ${data.msg}</li>`))
+//     {{!-- if(data.owner == currentuser && data.sender!=currentuser){
+//          $('.comments'+data.recipeid).append($(`<li>${data.msg}</li>`))
+     
+
+//     }else{
+// socket.emit('check',{friend :data.owner,
+//     user: currentuser})
+// socket.on('status',(status)=>{
+//     if(status == true){
+//       console.log(data.msg)
+//         $('.comments'+data.recipeid).append($(`<li>${data.msg}</li>`))
+      
+//         return
+//     }
+//     })
+    
+// } --}}
+})
+
+// my recipes
+
+let countclick =0 
+$('#myrecipes').click(()=>{
+    
+    countclick++
+    console.log(countclick)
+    if(countclick%2==0){
+         $('#divmyposts').empty()
+        $('#divmyposts').hide()
+       
+        
+         $('#divposts').show()
+         
+    }else{
+          console.log("clicked")
+        
+    $('#divmyposts').show()
+    $('#divposts').hide()
+    $.post('/myrecipes',{username: currentuser},(data)=>{
+        console.log(data)
+       for(let i=0;i<data.length;i++){
+   $('#divmyposts').append($(`
+    <div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].Uploader}</div>
+        <div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace">${data[i].Time}</div>
+            <div class="divrecipe${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].NameOfDish}</div>
+    `))
+    let arrayofsteps = data[i].Method.split(",")
+    let arrayofingredients = data[i].Ingredients.split(",")
+    $('#divmyposts').append($(`
+    
+    <t style="font-family:monospace;font-size:15pt">Ingredients:</t><ul class="ulingredients${data[i].id}">
+        </ul>
+    `))
+    for(let j=0;j<arrayofingredients.length;j++){
+$('.ulingredients'+data[i].id).append($(`<li style="font-family:monospace;font-size:12pt">${arrayofingredients[j]} </li>`))
+    }
+  
+  $('#divmyposts').append($(`
+   
+        <t style="font-size:15pt;font-family:monospace;">Recipe:</t><ol class="ulmethod${data[i].id}">
+            </ol>
+            `))
+
+for(let j=0;j<arrayofsteps.length;j++){
+    $('.ulmethod'+data[i].id).append($(`<li>${arrayofsteps[j]}</li>`))
+      
+}
+$('#divmyposts').append($(`<img src="${data[i].Image}" style="height:300px;width:300px;"></img>`))
+
+$('#divmyposts').append($(`
+<div class="commentbox${data[i].id}" style="height:200px;border:2px solid black;">
+    <t>Comments</t>
+    <ul class="comments${data[i].id}" style="height:120px;overflow-y:scroll;">
+        </ul>
+        <input class="inpcomment${data[i].id}" >
+        <button class="btncomment${data[i].id}" onclick="Send(this)">SEND</button>
+        </div>
+
+`))
+ 
+/*{{!-- socket.emit('getcomments',{recipeid: data[i].id})
+
+socket.on('gotcomments',(data)=>{
+
+$('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${data.comment}</li>`))
+    console.log(data)
+}) --}}*/
+   $.post('/getcomments',{id : data[i].id},(list)=>{
+       console.log("hjkhdjksd")
+       console.log(list)
+        for(let i=0;i<list.length;i++){
+            $('.comments'+list[i].Recipe).append($(`<li id="${list[i].id}">${list[i].Sender} : ${list[i].Comment}</li>`))
+        }
+    })
+    
+    
+       }
+    })
+        
+    }
+  
+
+})
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// logout 
+$('#btnlogout').click(()=>{
+$.post('/logout',(data)=>{
+console.log(data)
+if(data=="done"){
+window.location.replace('/')
+}
+})
+})
+</script>
 </body>
 </html>

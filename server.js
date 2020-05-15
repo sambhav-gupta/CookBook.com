@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -124,7 +124,8 @@ Users.findOne({
 
 })
 
-
+app.use(express.static('profilepictures'))
+app.use(express.static('recipepics'))
 
 
 // rendering content page if the user is signed up or logged in successfully
@@ -133,11 +134,129 @@ app.get('/content',(req,res)=>{
         res.redirect('/')
         return
       }
-      const user = {name: req.session.username}
-        res.render('content',{user})
+      Users.findOne({
+          where:{
+              Username: req.session.username
+          }
+      }).then((user)=>{
+        const userinfo = {name: user.Username,
+        image : user.Dp}
+        console.log(userinfo)
+        res.render('content',{userinfo})
+
+      }).catch((err)=>{
+          console.log(err)
+      })
+     
       
 })
+// establishing socket.io connection
+io.on('connection',(socket)=>{
+   
+    socket.on('loggedin',(data)=>{
+        socket.join(data.username)
+        
+    })
+    socket.on('getfriends',(data)=>{
+        let friendlist = []
+        Friendlist.findAndCountAll({
+            where:{
+                Username : data.username
+            }
+        }).then((friends)=>{
+            for(let i=0;i<friends.count;i++){
+                friendlist.push(friends.rows[i].dataValues.Friendname)
+            }
+            io.to(data.username).emit('gotfriends',friendlist)
+        })
+    })
 
+    socket.on('getrecipesoffriends',(data)=>{
+       
+     for(let i=0;i<data.length;i++){
+        let recipes = []
+        Recipes.findAndCountAll({
+            where:{
+                Uploader : data[i]
+            }
+        }).then((recipe)=>{
+            if(recipe){
+                for(let i=0;i<recipe.count;i++){
+                    recipes.push(recipe.rows[i].dataValues.id)
+
+                }
+              
+            }
+            socket.emit('foundrecipes',recipes)
+           
+
+        })
+        
+     }
+   
+    })
+    // returning recipes for given id
+    socket.on('getrecipe',(data)=>{
+        Recipes.findOne({
+            where:{
+                id:data
+            }
+        }).then((recipe)=>{
+            socket.emit('foundrecipe',recipe.dataValues)
+        })
+    })
+   
+    socket.on('commentsend',(data)=>{
+        Comments.create({
+           Recipe : data.recipeid,
+           Sender : data.sender,
+           Owner: data.owner,
+           Deleted: false,
+           Comment: data.msg
+
+        }).then((comment)=>{
+let commentdata = {msg:comment.Comment,
+id: comment.id,
+recipeid: data.recipeid,
+sender: data.sender}
+            socket.broadcast.emit('commentreceive',commentdata)
+        })
+       
+    })
+
+    socket.on('check',(data)=>{
+        Friendlist.findOne({
+            where:{
+                Username : data.user,
+                Friendname: data.friend
+            }
+        }).then((friend)=>{
+            if(friend){
+                io.to(data.user).emit('status',true)
+            }else{
+                io.to(data.user).emit('status',false)
+            }
+        })
+    })
+
+    socket.on('getcomments',(data)=>{
+        Comments.findAndCountAll({
+            where: {
+                Recipe: data.recipeid
+            }
+        }).then((comments)=>{
+            for(let i=0;i<comments.count;i++){
+                socket.emit('gotcomments',{comment: comments.rows[i].dataValues.Comment,
+                sender: comments.rows[i].dataValues.Sender,
+            recipeid:comments.rows[i].dataValues.Recipe ,
+        id: comments.rows[i].dataValues.id })
+            }
+        })
+    })
+
+    
+})
+// redirection to content page after login
 app.post('/content', async (req, res) => {
 
   
@@ -155,13 +274,139 @@ app.post('/logout',(req,res)=>{
     res.send('done')
 })
 
+// getting all the users 
+app.post('/getallusers',(req,res)=>{
+    let userlistserver = []
+    Users.findAndCountAll().then((users)=>{
+for(let i=0;i<users.count;i++){
+    userlistserver.push(users.rows[i].dataValues.Username + "=" + users.rows[i].dataValues.Dp)
+
+}
+res.send(userlistserver)
+
+    })
+  
+    
+})
+
+// add recipe in database
+var storagerecipe = multer.diskStorage({
+    destination : (req,file,cb)=>{
+        cb(null,'../Project1/recipepics')
+    },
+    filename: (req,file,cb)=>{
+       
+        console.log(req.body)
+            cb(null,file.fieldname + '-' + req.body.nameofdish + '-' + Date.now() + path.extname(file.originalname) )
+        
+      
+    }
+    })
+    
+    var uploadrecipe = multer({
+        storage: storagerecipe,
+        fileFilter: (req,file,cb)=>{
+            checkfiletype(file,cb)
+        }
+    }).single('recipeimage')
+    
+    function checkfiletype(file,cb){
+        const filetypes = /jpeg|jpg|png/
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase())
+        const mimetype = filetypes.test(file.mimetype)
+        if(mimetype && extname){
+             return cb(null,true)
+        }else{
+            return cb('Error: Images Only')
+    
+        }
+    
+    }
+
+    app.post('/addrecipe',(req,res)=>{
+   
+    
+        uploadrecipe(req,res,(err)=>{
+            if(err){
+                console.log("Error in server")
+                console.log(err)
+               res.send(err)
+                return
+            }else {
+                if(req.file == undefined){
+                    res.send("No file Selected")
+                    return
+                }else{
+                  
+           Recipes.create({
+               Uploader: req.body.username,
+               NameOfDish : req.body.nameofdish,
+               Type: req.body.type,
+                Image: req.file.filename,
+                Ingredients : req.body.ingredients.toString(),
+                Method : req.body.steps.toString(),
+                Cuisine : req.body.cuisine,
+                Deleted : false,
+                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
+           })
+               console.log("Uploaded Successfully")
+                  
+                }
+            }
+        })
+    })
 
 
+// adding friends
+app.post('/addfriend',(req,res)=>{
+    Users.findOne({
+        where:{
+            Username: req.body.friendname
+        }
+    }).then((user)=>{
+        if(user){
+            Friendlist.create({
+                Username: req.body.username,
+                Friendname: req.body.friendname
+            })
+            res.send("Added")
+        }else{
+            res.send("Failed")
+        }
+    })
 
+})
 
+// my recipes
+app.post('/myrecipes',(req,res)=>{
+    let myrecipes = []
+    Recipes.findAndCountAll({
+        where:{
+            Uploader: req.body.username
+        }
+    }).then((recipe)=>{
+        for(let i=0;i<recipe.count;i++){
+            myrecipes.push(recipe.rows[i].dataValues)
+        }
+        res.send(myrecipes)
 
+    })
+})
 
-
+app.post('/getcomments',(req,res)=>{
+    Comments.findAndCountAll({
+        where:{
+            Recipe: req.body.id
+        }
+    }).then((comments)=>{
+        let commentlist = []
+        for(let i=0;i<comments.count;i++){
+            commentlist.push(comments.rows[i].dataValues)
+        }
+        console.log(commentlist)
+        res.send(commentlist)
+    })
+})
 
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{
