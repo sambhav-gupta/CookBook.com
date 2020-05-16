@@ -9,18 +9,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <style>
- #searcheduser::-webkit-scrollbar{
-        display: none;
 
-    }
     #ulingredients li{
         display: inline;
 
     }
-     ul::-webkit-scrollbar{
-        display: none;
-
-    }
+     
     
 </style>
 <body>
@@ -90,7 +84,7 @@ Logout&nbsp;
  <!-- {{!-- Main Div starts --}} -->
   <div id="main" style="position: fixed;display: inline-block;">
        <!-- div to add new recipe -->
-  <div id="divaddnewrecipe" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 800px;position: fixed;padding-top: 10px ;overflow-y: scroll;">
+  <div id="divaddnewrecipe" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 800px;position: fixed;padding-top: 10px ;overflow-y: scroll;background-color: white">
     <form method="POST" enctype="multipart/form-data" id="frmaddrecipe" class="form-inline">
         &nbsp;&nbsp;
        <input class="form-control" placeholder="Name Of The Dish" id="inpnameofdish" style="width: 200px;" name="nameofdish"> &nbsp;&nbsp;&nbsp;
@@ -307,7 +301,8 @@ $('#btnaddnewfriend').click(()=>{
 $('#share').hide()
 
 $('#btnaddtolist').click(()=>{
-   
+    $('#divmyposts').hide()
+   $('#divaddnewrecipe').show()
 let Ingredient = $('#inpingredient').val()
 let Quantity = $('#inpquantity').val()
 let unit =  $('#unit option:selected').val()
@@ -332,11 +327,20 @@ $('#inpmethod').keypress((e)=>{
         e.preventDefault()
         let step = $('#inpmethod').val()
         $('#olsteps').append($(`
-        <li>${step}</li>
+        <li><t>${step}</t><button type="button"  onclick="up(this)">up</button><button type="button" onclick="down(this)">down</button></li>
         `))
         $('#inpmethod').val("")
     }
 })
+
+function up(obj){
+    console.log("up")
+ $(obj).parent().insertBefore($(obj).parent().prev())
+}
+function down(obj){
+    console.log("down")
+ $(obj).parent().insertAfter($(obj).parent().next())
+}
 $('#inpingredient').keypress((e)=>{
     if(e.which == 13){
         e.preventDefault()
@@ -354,8 +358,8 @@ $('#inpquantity').keypress((e)=>{
 $("#ulingredients").on("click","li",function() {
     $(this).remove();
 })
-$("#olsteps").on("click","li",function() {
-    $(this).remove();
+$("#olsteps").on("click","li t",function() {
+    $(this).parent().remove();
 })
 let btnuploadcount = 0
 $('#btnupload').click(()=>{
@@ -508,7 +512,8 @@ $('#divposts').append($(`
     <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;">
         </ul>
         <input class="inpcomment${data.id}">
-        <button class="btncomment${data.id}" onclick="Send(this)">SEND</button>
+        <button class="btncomment${data.id}" onclick="
+        (this)">SEND</button>
         </div>
 
 `))
@@ -568,7 +573,7 @@ socket.on('commentreceive',(data)=>{
 
 let countclick =0 
 $('#myrecipes').click(()=>{
-    
+    $('#divaddnewrecipe').hide()
     countclick++
     console.log(countclick)
     if(countclick%2==0){
@@ -587,7 +592,7 @@ $('#myrecipes').click(()=>{
         console.log(data)
        for(let i=0;i<data.length;i++){
    $('#divmyposts').append($(`
-    <div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].Uploader}</div>
+    <div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].Uploader}<button id="btnedit${data[i].id}">Edit</button></div>
         <div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace">${data[i].Time}</div>
             <div class="divrecipe${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].NameOfDish}</div>
     `))
