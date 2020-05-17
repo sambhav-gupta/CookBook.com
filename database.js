@@ -103,5 +103,18 @@ const Comments = db.define('comments',{
         allownull: false
     }
 })
+const Favourites = db.define('favourites',{
+    Markedby:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Recipe:{
+        type: Seqeulize.INTEGER,
+        allownull: false
+    },
+    Unmarked:{
+        type: Seqeulize.BOOLEAN
+    }
+})
 
-exports  = module.exports = {db,Users,Recipes,Friendlist,Comments}
+exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites}

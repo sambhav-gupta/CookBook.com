@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users , Recipes ,Friendlist , Comments} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments,Favourites} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -45,6 +45,7 @@ var storage = multer.diskStorage({
         }
     
     }
+    app.use(express.static('./views'))
 
     // adding user details to database on signup
     app.post('/signup',(req,res)=>{
@@ -403,10 +404,103 @@ app.post('/getcomments',(req,res)=>{
         for(let i=0;i<comments.count;i++){
             commentlist.push(comments.rows[i].dataValues)
         }
-        console.log(commentlist)
+       
         res.send(commentlist)
     })
 })
+// editing a recipe
+app.post('/getrecipedetails',(req,res)=>{
+    Recipes.findOne({
+        where:{
+            id: req.body.id
+        }
+    }).then((recipe)=>{
+        res.send(recipe)
+    })
+})
+// editing
+var storagerecipeedit = multer.diskStorage({
+    destination : (req,file,cb)=>{
+        cb(null,'../Project1/recipepics')
+    },
+    filename: (req,file,cb)=>{
+       
+        console.log(req.body)
+            cb(null,file.fieldname + '-' + req.body.nameofdish + '-' + Date.now() + path.extname(file.originalname) )
+        
+      
+    }
+    })
+    
+    var uploadrecipeedit = multer({
+        storage: storagerecipeedit,
+        fileFilter: (req,file,cb)=>{
+            checkfiletype(file,cb)
+        }
+    }).single('recipeimage')
+    
+    function checkfiletype(file,cb){
+        const filetypes = /jpeg|jpg|png/
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase())
+        const mimetype = filetypes.test(file.mimetype)
+        if(mimetype && extname){
+             return cb(null,true)
+        }else{
+            return cb('Error: Images Only')
+    
+        }
+    
+    }
+
+    app.post('/editrecipe',(req,res)=>{
+   
+    
+        uploadrecipeedit(req,res,(err)=>{
+            if(err){
+                console.log("Error in server")
+                console.log(err)
+               res.send(err)
+                return
+            }else {
+                if(req.file == undefined){
+                    Recipes.update({
+                        Uploader: req.body.username,
+                        NameOfDish : req.body.nameofdish,
+                        Type: req.body.type,
+                         Ingredients : req.body.ingredients.toString(),
+                         Method : req.body.steps.toString(),
+                         Cuisine : req.body.cuisine,
+                         Deleted : false,
+                         Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
+                    },{where : { id: req.body.id}})
+                    res.send("updated without image")
+                    return
+                }else{
+                  
+           Recipes.update({
+               Uploader: req.body.username,
+               NameOfDish : req.body.nameofdish,
+               Type: req.body.type,
+                Image: req.file.filename,
+                Ingredients : req.body.ingredients.toString(),
+                Method : req.body.steps.toString(),
+                Cuisine : req.body.cuisine,
+                Deleted : false,
+                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
+           },{where : { id: req.body.id}})
+           res.send("updated with image")
+               console.log("Uploaded Successfully")
+                  
+                }
+            }
+        })
+    })
+// deleting a recipe
+app.post('/deleterecipe',(req,res)=>{
+    Recipes.update({Deleted: true},{where:{id:req.body.id}})
+    res.send("deleted")
+})
+// favourites
 
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{
