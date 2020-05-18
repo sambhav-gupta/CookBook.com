@@ -1,4 +1,13 @@
-const {db,Users,Recipes} = require('./database')
+const {db,Users,Recipes,Comments} = require('./database')
 
-let str = "ddsd,dssdfsdfdfs,wedghdfij"
-console.log(str.split(","))
+Comments.create({
+    Recipe : 1,
+    Sender : "dfsfklj",
+    Owner: "dfkjhsdfkjsh",
+    Deleted: false,
+    Comment: "sdkljfsdg",
+    ImageSender: "dfsjkdsfhsd"
+
+ }).then((comment)=>{
+     console.log(comment)
+ })

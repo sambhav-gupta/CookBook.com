@@ -213,13 +213,15 @@ io.on('connection',(socket)=>{
            Sender : data.sender,
            Owner: data.owner,
            Deleted: false,
-           Comment: data.msg
+           Comment: data.msg,
+           ImageSender: data.senderimage
 
         }).then((comment)=>{
 let commentdata = {msg:comment.Comment,
 id: comment.id,
 recipeid: data.recipeid,
-sender: data.sender}
+sender: data.sender,
+senderimage: data.senderimage}
             socket.broadcast.emit('commentreceive',commentdata)
         })
        
@@ -250,7 +252,8 @@ sender: data.sender}
                 socket.emit('gotcomments',{comment: comments.rows[i].dataValues.Comment,
                 sender: comments.rows[i].dataValues.Sender,
             recipeid:comments.rows[i].dataValues.Recipe ,
-        id: comments.rows[i].dataValues.id })
+        id: comments.rows[i].dataValues.id ,
+    senderimage: comments.rows[i].dataValues.ImageSender})
             }
         })
     })
@@ -348,7 +351,8 @@ var storagerecipe = multer.diskStorage({
                 Method : req.body.steps.toString(),
                 Cuisine : req.body.cuisine,
                 Deleted : false,
-                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
+                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
+                UploaderImage: req.body.uploaderimage
            })
                console.log("Uploaded Successfully")
                   

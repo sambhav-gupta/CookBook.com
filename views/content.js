@@ -211,6 +211,7 @@ let ingredients = []
 let steps = []
 let cuisine = $('#cuisine option:selected').val()
 let type = $("input:checked").val()
+let uploaderimage = $('#imguser').attr("src")
 var formData = new FormData(this)
 $('#ulingredients li').each(function(index){
 ingredients.push($(this).text())
@@ -233,7 +234,7 @@ for(let i=0;i<steps.length;i++){
 formData.append("steps",steps[i])
 }
 
-
+formData.append("uploaderimage",uploaderimage)
 formData.append("cuisine",cuisine)
 formData.append("type",type)
 formData.append("username",currentuser)
@@ -300,7 +301,7 @@ if(data.Deleted == 1){
 
 
 $('#divposts').append($(`
-<div class="divname${data.id}" style="font-size:15pt;font-family: monospace">${data.Uploader}</div>
+<div class="divname${data.id}" style="font-size:15pt;font-family: monospace">${data.Uploader}<img src="${data.UploaderImage}" style="height:40px;width:40px;></img>"</div>
 <div class="divtime${data.id}" style="font-size:12pt;font-family: monospace">${data.Time}</div>
     <div class="divrecipe${data.id}" style="font-size:15pt;font-family: monospace">${data.NameOfDish}</div>
 `))
@@ -333,7 +334,7 @@ $('#divposts').append($(`
 <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;">
 </ul>
 <input class="inpcomment${data.id}">
-<button class="btncomment${data.id}" onclick="
+<button class="btncomment${data.id}" onclick="Send
 (this)">SEND</button>
 </div>
 
@@ -347,7 +348,7 @@ $('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${da
 $.post('/getcomments',{id : data.id},(data)=>{
 console.log(data)
 for(let i=0;i<data.length;i++){
-    $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}">${data[i].Sender} : ${data[i].Comment}</li>`))
+    $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}">${data[i].Sender}<img src="${data[i].ImageSender}" style="height:40px;width:40px;"></img> : ${data[i].Comment}</li>`))
 }
 })
 }
@@ -356,21 +357,22 @@ for(let i=0;i<data.length;i++){
 
 
 // comments
-
+let imgusersrc = $('#imguser').attr("src")
 function Send(obj){
 let id = $(obj).attr('class')
 console.log(id)
 id = id.split("btncomment")[1]
-$('.comments'+id).append($(`<li>${currentuser} : ${$('.inpcomment'+id).val()}</li>`))
+$('.comments'+id).append($(`<li>${currentuser} <img src="${imgusersrc}" style="height:40px;width:40px;"></img> : ${$('.inpcomment'+id).val()}</li>`))
 socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
 sender : currentuser,
+senderimage: imgusersrc,
 owner : $('.divname'+id).text(),
 recipeid : id
 })
 }
 socket.on('commentreceive',(data)=>{
 console.log("djkjsdjsd" + data.msg + '-' + data.id)
-$('.comments'+data.recipeid).append($(`<li  id="${data.id}"a>${data.sender} : ${data.msg}</li>`))
+$('.comments'+data.recipeid).append($(`<li  id="${data.id}">${data.sender}<img src="${data.senderimage}" style="height:40px;width:40px;"></img> : ${data.msg}</li>`))
 //     {{!-- if(data.owner == currentuser && data.sender!=currentuser){
 //          $('.comments'+data.recipeid).append($(`<li>${data.msg}</li>`))
 
@@ -416,7 +418,7 @@ for(let i=0;i<data.length;i++){
         continue
     }else{
 $('#divmyposts').append($(`
-<div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].Uploader}<button id="btnedit${data[i].id}" onclick="edit(this.id)">Edit</button>
+<div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace">${data[i].Uploader}<img src="${data[i].UploaderImage}" style="height:40px;width:40px;"></img><button id="btnedit${data[i].id}" onclick="edit(this.id)">Edit</button>
 <button id="btndelete${data[i].id}" onclick="deletemypost(this.id)">Delete</button>
 </div>
 <div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace">${data[i].Time}</div>
@@ -464,10 +466,10 @@ $('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${da
 console.log(data)
 }) --}}*/
 $.post('/getcomments',{id : data[i].id},(list)=>{
-console.log("hjkhdjksd")
+
 console.log(list)
 for(let i=0;i<list.length;i++){
-    $('.comments'+list[i].Recipe).append($(`<li id="${list[i].id}">${list[i].Sender} : ${list[i].Comment}</li>`))
+    $('.comments'+list[i].Recipe).append($(`<li id="${list[i].id}">${list[i].Sender}<img src="${list[i].ImageSender}" style="height:40px;width:40px;"></img> : ${list[i].Comment}</li>`))
 }
 })
 

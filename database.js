@@ -67,6 +67,10 @@ const Recipes = db.define('recipe',{
     Time:{
         type: Seqeulize.STRING,
         allownull: false
+    },
+    UploaderImage:{
+        type: Seqeulize.STRING,
+        allownull: false
     }
 })
 
@@ -99,6 +103,10 @@ const Comments = db.define('comments',{
         allownull: false
     },
     Comment:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    ImageSender:{
         type: Seqeulize.STRING,
         allownull: false
     }
