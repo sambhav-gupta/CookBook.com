@@ -124,5 +124,53 @@ const Favourites = db.define('favourites',{
         type: Seqeulize.BOOLEAN
     }
 })
+const NotificationsRecipes = db.define('notificationrecipes',{
+    Sender : {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Notification: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Date:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Time: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    SenderImage:{
+        type: Seqeulize.STRING,
+        allownull: false
+    }
+})
+const NotificationsComments= db.define('notificationcomments',{
+    Sender : {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Notification: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Date:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Time: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    SenderImage:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Receiver:{
+        type: Seqeulize.STRING,
+        allownull: false
+    }
+})
 
-exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites}
+exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites,NotificationsRecipes,NotificationsComments}

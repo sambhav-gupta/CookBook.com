@@ -2,11 +2,12 @@ const socket = io()
 socket.emit('loggedin',{username : $('#currentuser').text()})
 socket.emit('getfriends',{username:$('#currentuser').text() })
 
-
+$('#divmyposts').hide()
 
 $('#divaddnewrecipe').hide()
 $('#diveditrecipe').hide()
 let currentuser = $('#currentuser').text()
+let imgusersrc = $('#imguser').attr("src")
 
     let userlist = []
     let friendlist =[]
@@ -249,7 +250,9 @@ url: '/addrecipe',
 type: 'POST',
 data: formData,
 success: function(data){
+    socket.emit("notify",{user : currentuser,userimage : imgusersrc})
 alert(data)
+
 
 },
 catch: false,
@@ -270,29 +273,29 @@ socket.on('gotfriends',(data)=>{
 for(let i=0;i<data.length;i++){
  friendlist.push(data[i])
 }
+let object = {}
+object.array = data
+object.user = currentuser
+socket.emit('getnotifications',object)
        socket.emit('getrecipesoffriends',data)
     })
 
 
 
 
-
-
-
+let recipelist = []
 socket.on('foundrecipes',(data)=>{
 for(let i=0;i<data.length;i++){
-
+recipelist.push(data[i])
 socket.emit('getrecipe',data[i])
+
 }
 
 })
 
 
 
-
-
-
-
+console.log(recipelist)
 socket.on('foundrecipe',(data)=>{
 if(data.Deleted == 1){
     return
@@ -301,9 +304,10 @@ if(data.Deleted == 1){
 
 
 $('#divposts').append($(`
-<div class="divname${data.id}" style="font-size:15pt;font-family: monospace">${data.Uploader}<img src="${data.UploaderImage}" style="height:40px;width:40px;></img>"</div>
-<div class="divtime${data.id}" style="font-size:12pt;font-family: monospace">${data.Time}</div>
-    <div class="divrecipe${data.id}" style="font-size:15pt;font-family: monospace">${data.NameOfDish}</div>
+<div class="divrecipe${data.id}" style="font-size:18pt;font-family: monospace">${data.NameOfDish}</div>
+<div class="divname${data.id}" style="font-size:15pt;font-family: monospace">Uploaded By : <t class="tname${data.id}">${data.Uploader}</t><img src="${data.UploaderImage}" style="height:40px;width:40px;></img>"</div>
+<div class="divtime${data.id}" style="font-size:12pt;font-family: monospace">On : ${data.createdAt.split("T")[0]}</div>
+    
 `))
 let arrayofsteps = data.Method.split(",")
 let arrayofingredients = data.Ingredients.split(",")
@@ -313,7 +317,7 @@ $('#divposts').append($(`
 </ul>
 `))
 for(let i=0;i<arrayofingredients.length;i++){
-$('.ulingredients'+data.id).append($(`<li style="font-family:monospace;font-size:12pt">${arrayofingredients[i]} </li>`))
+$('.ulingredients'+data.id).append($(`<li style="font-family:monospace;font-size:12pt">${arrayofingredients[i]}</li>`))
 }
 
 $('#divposts').append($(`
@@ -329,15 +333,15 @@ $('.ulmethod'+data.id).append($(`<li>${arrayofsteps[i]}</li>`))
 $('#divposts').append($(`<img src="${data.Image}" style="height:300px;width:300px;"></img>`))
 
 $('#divposts').append($(`
-<div class="commentbox${data.id}" style="height:200px;border:2px solid black;">
-<t>Comments</t>
+<br><br><div class="commentbox${data.id}" style="height:200px;border:2px solid black;">
+<t style="margin-left:230px;">Comments</t><br>
 <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;">
 </ul>
-<input class="inpcomment${data.id}">
+<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data.id}" onclick="Send
 (this)">SEND</button>
-</div>
-
+</div><br>
+<div style="height:2px;background-color:red;"></div>
 `))
 
 /*{{!-- socket.emit('getcomments',{recipeid: data.id})
@@ -357,18 +361,29 @@ for(let i=0;i<data.length;i++){
 
 
 // comments
-let imgusersrc = $('#imguser').attr("src")
+
 function Send(obj){
+   
 let id = $(obj).attr('class')
 console.log(id)
+
 id = id.split("btncomment")[1]
+if($('.inpcomment'+id).val().length == 0){
+    alert("Please Write A Comment")
+    return
+}else{
+
+
 $('.comments'+id).append($(`<li>${currentuser} <img src="${imgusersrc}" style="height:40px;width:40px;"></img> : ${$('.inpcomment'+id).val()}</li>`))
 socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
 sender : currentuser,
 senderimage: imgusersrc,
-owner : $('.divname'+id).text(),
-recipeid : id
+owner : $('.tname'+id).text(),
+recipeid : id,
+user: currentuser
 })
+$('.inpcomment'+id).val("")
+}
 }
 socket.on('commentreceive',(data)=>{
 console.log("djkjsdjsd" + data.msg + '-' + data.id)
@@ -638,12 +653,19 @@ function deletemypost(id){
 }
 
 
+//
+socket.on("notificationrecipe",(data)=>{
+    $('#ulnotification').prepend($(`<li>${data.user} <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img> Posted A Recipe</li>`))
+})
+socket.on("notificationcomment",(data)=>{
+    $('#ulnotification').prepend($(`<li>${data.sender} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img>${data.msg}</li>`))
+})
 
 
-
-
-
-
+socket.on("gotnotifications",(data)=>{
+  
+    $('#ulnotification').prepend($(`<li>${data.sender}<img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> ${data.msg} </li>`))
+})
 
 // logout 
 $('#btnlogout').click(()=>{

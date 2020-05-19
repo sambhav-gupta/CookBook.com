@@ -21,6 +21,7 @@
     <!-- {{!-- Heading div to display name of the website and greetings --}} -->
    <div id="divheading" style=" height: 100px;text-align: center;font-size: 30pt;font-weight: bold;font-family: sans-serif;border-bottom: 1px solid black;">Welcome To Somerandomname.com</div>
    <!-- {{!-- Sidebar div to display myfriends myrecipes add friends and recipes .etc --}} -->
+   
 <div id="divsidebar" style="width: 300px;border-right: 2px solid black;display: inline-block;">
     <!-- {{!-- user info --}} -->
     <div id="divuserinfo" style="border-bottom: 2px solid black;padding: 10px;font-family: sans-serif;font-size: 12pt;font-weight: bold;">
@@ -77,7 +78,8 @@ Logout&nbsp;
   <!-- sidebardiv end  -->
 
  <!-- {{!-- Main Div starts --}} -->
-  <div id="main" style="position: fixed;display: inline-block;">
+  <div id="main" style="position: fixed;display: inline-block;width:600px;">
+
        <!-- div to add new recipe -->
   <div id="divaddnewrecipe" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 800px;position: fixed;padding-top: 10px ;overflow-y: scroll;background-color: white">
     <form method="POST" enctype="multipart/form-data" id="frmaddrecipe" class="form-inline">
@@ -153,7 +155,7 @@ Logout&nbsp;
 
 <!-- {{!-- Div to show posts of friends --}} -->
 
-<div id="divposts" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 500px;padding-top: 10px ;overflow-y: scroll;">
+<div id="divposts" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 600px;padding-top: 10px ;overflow-y: scroll;padding:10px;">
 </div>
 {{!-- div to show user's posts --}}
 <div id="divmyposts" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 500px;padding-top: 10px ;overflow-y: scroll;">
@@ -234,17 +236,24 @@ Logout&nbsp;
 
  </div>
 {{!-- div to edit ends --}}
-{{!-- div to show favourites --}}
-<div id="divmyfavourites" style="width: 600px;border-right: 2px solid black;display: inline-block;height: 500px;padding-top: 10px ;overflow-y: scroll;">
-</div>
+
+
+
+
 
 </div>
-       
-
-  
+       {{!--end of main div  --}}
 
     
-   
+ 
+<div id="divnotification" style="height:600px;width:470px;background-color:blue;display:inline-block;margin-left:600px;position:fixed">Notifications
+<ul id="ulnotification">
+    
+</ul>
+
+</div>
+
+
 
  
  

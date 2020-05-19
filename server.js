@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users , Recipes ,Friendlist , Comments,Favourites} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -159,6 +159,8 @@ io.on('connection',(socket)=>{
         
     })
     socket.on('getfriends',(data)=>{
+
+
         let friendlist = []
         Friendlist.findAndCountAll({
             where:{
@@ -206,7 +208,7 @@ io.on('connection',(socket)=>{
             socket.emit('foundrecipe',recipe.dataValues)
         })
     })
-   
+ 
     socket.on('commentsend',(data)=>{
         Comments.create({
            Recipe : data.recipeid,
@@ -223,6 +225,17 @@ recipeid: data.recipeid,
 sender: data.sender,
 senderimage: data.senderimage}
             socket.broadcast.emit('commentreceive',commentdata)
+        })
+        NotificationsComments.create({
+            Sender: data.sender,
+            Notification: "Commented on Your Recipe",
+            Date: new Date().getDay() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+            Time: new Date().getHours() + ':' + new Date().getMinutes(),
+            SenderImage: data.senderimage,
+            Receiver: data.owner
+        }).then((created)=>{
+            io.to(data.owner).emit("notificationcomment",{sender: data.sender , image:data.senderimage , msg:"Commented On Your Recipe"})
+
         })
        
     })
@@ -258,6 +271,48 @@ senderimage: data.senderimage}
         })
     })
 
+    socket.on("notify",(data)=>{
+        NotificationsRecipes.create({
+            Sender: data.user,
+            Notification: "Added a recipe",
+            Date: new Date().getDay() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+            Time: new Date().getHours() + ':' + new Date().getMinutes(),
+            SenderImage: data.userimage
+        })
+        Friendlist.findAndCountAll({
+            where: {Username : data.user}
+        }).then((friends)=>{
+            for(let i=0;i<friends.count;i++){
+                io.to(friends.rows[i].dataValues.Friendname).emit("notificationrecipe",(data))
+            }
+        })
+    })
+    socket.on('getnotifications',(data)=>{
+        for(let i=0;i<data.array.length;i++){
+            NotificationsRecipes.findOne({
+                where: {
+                    Sender: data.array[i]
+                }
+            }).then((notification)=>{
+                if(notification){
+                    io.to(data.user).emit("gotnotifications",{msg : notification.Notification , image: notification.SenderImage ,sender: notification.Sender})
+                }
+            })
+
+        }
+        for(let i=0;i<data.array.length;i++){
+            NotificationsComments.findOne({
+                where: {
+                    Sender: data.array[i],
+                    Receiver: data.user
+                }
+            }).then((notification)=>{
+                if(notification){
+                    io.to(data.user).emit("gotnotifications",{msg : notification.Notification , image: notification.SenderImage ,sender: notification.Sender})
+                }
+            })
+        }
+    })
     
 })
 // redirection to content page after login
@@ -354,7 +409,10 @@ var storagerecipe = multer.diskStorage({
                 Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
                 UploaderImage: req.body.uploaderimage
            })
+           
+
                console.log("Uploaded Successfully")
+               res.send("uploaded")
                   
                 }
             }
@@ -504,7 +562,10 @@ app.post('/deleterecipe',(req,res)=>{
     Recipes.update({Deleted: true},{where:{id:req.body.id}})
     res.send("deleted")
 })
-// favourites
+// notifications
+app.post('/getnotifications',(req,res)=>{
+
+})
 
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{
