@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments,NotificationsFriends} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -208,7 +208,7 @@ io.on('connection',(socket)=>{
             socket.emit('foundrecipe',recipe.dataValues)
         })
     })
- 
+   
     socket.on('commentsend',(data)=>{
         Comments.create({
            Recipe : data.recipeid,
@@ -216,25 +216,23 @@ io.on('connection',(socket)=>{
            Owner: data.owner,
            Deleted: false,
            Comment: data.msg,
-           ImageSender: data.senderimage
+           ImageSender: data.senderimage,
+           Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
+           Time: new Date().getHours() + ':' + new Date().getMinutes(),
 
         }).then((comment)=>{
-let commentdata = {msg:comment.Comment,
-id: comment.id,
-recipeid: data.recipeid,
-sender: data.sender,
-senderimage: data.senderimage}
-            socket.broadcast.emit('commentreceive',commentdata)
+
+            socket.broadcast.emit('commentreceive',comment)
         })
         NotificationsComments.create({
             Sender: data.sender,
-            Notification: "Commented on Your Recipe",
-            Date: new Date().getDay() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+            Notification: "Commented on Your Recipe " + data.recipename,
+            Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
             Time: new Date().getHours() + ':' + new Date().getMinutes(),
             SenderImage: data.senderimage,
             Receiver: data.owner
         }).then((created)=>{
-            io.to(data.owner).emit("notificationcomment",{sender: data.sender , image:data.senderimage , msg:"Commented On Your Recipe"})
+            io.to(data.owner).emit("notificationcomment",{sender: data.sender , image:data.senderimage , msg:"Commented On Your Recipe "+data.recipename})
 
         })
        
@@ -275,7 +273,7 @@ senderimage: data.senderimage}
         NotificationsRecipes.create({
             Sender: data.user,
             Notification: "Added a recipe",
-            Date: new Date().getDay() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+            Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
             Time: new Date().getHours() + ':' + new Date().getMinutes(),
             SenderImage: data.userimage
         })
@@ -289,26 +287,34 @@ senderimage: data.senderimage}
     })
     socket.on('getnotifications',(data)=>{
         for(let i=0;i<data.array.length;i++){
-            NotificationsRecipes.findOne({
+            NotificationsRecipes.findAndCountAll({
                 where: {
                     Sender: data.array[i]
                 }
             }).then((notification)=>{
                 if(notification){
-                    io.to(data.user).emit("gotnotifications",{msg : notification.Notification , image: notification.SenderImage ,sender: notification.Sender})
+                    for(let i=0;i<notification.count;i++){
+
+                    
+                    io.to(data.user).emit("gotnotificationsrecipes",{msg : notification.rows[i].dataValues.Notification , image: notification.rows[i].dataValues.SenderImage ,sender: notification.rows[i].dataValues.Sender,date: notification.rows[i].dataValues.Date , time : notification.rows[i].dataValues.Time })
+                    }
                 }
             })
 
         }
         for(let i=0;i<data.array.length;i++){
-            NotificationsComments.findOne({
+            NotificationsComments.findAndCountAll({
                 where: {
                     Sender: data.array[i],
                     Receiver: data.user
                 }
             }).then((notification)=>{
                 if(notification){
-                    io.to(data.user).emit("gotnotifications",{msg : notification.Notification , image: notification.SenderImage ,sender: notification.Sender})
+                    for(let i=0;i<notification.count;i++){
+
+                    
+                    io.to(data.user).emit("gotnotificationscomments",{msg : notification.rows[i].dataValues.Notification , image: notification.rows[i].dataValues.SenderImage ,sender: notification.rows[i].dataValues.Sender , date: notification.rows[i].dataValues.Date , time : notification.rows[i].dataValues.Time})
+                    }
                 }
             })
         }
@@ -432,6 +438,16 @@ app.post('/addfriend',(req,res)=>{
                 Username: req.body.username,
                 Friendname: req.body.friendname
             })
+            NotificationsFriends.create({
+                Sender: req.body.username,
+                Notification: "Added You as a Friend",
+                Date: new Date().getDate() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+                Time: new Date().getHours() + ':' + new Date().getMinutes(),
+                Receiver: req.body.friendname,
+                SenderImage : req.body.image
+
+            })
+io.to(req.body.friendname).emit("notifyfriend",{sender: req.body.username , msg: "Added You as a friend" ,image:req.body.image})
             res.send("Added")
         }else{
             res.send("Failed")
@@ -563,9 +579,37 @@ app.post('/deleterecipe',(req,res)=>{
     res.send("deleted")
 })
 // notifications
-app.post('/getnotifications',(req,res)=>{
+app.post('/getnotification',(req,res)=>{
+    NotificationsFriends.findAndCountAll({
+        where:{
+            Receiver: req.body.user
+        }
+    }).then((msg)=>{
+        if(msg){
+            let list = []
+            for(let i=0;i<msg.count;i++){
+                list.push(msg.rows[i].dataValues)
+            }
+            res.send(list)
+        }
+    })
 
 })
+
+app.post("/getdetails",(req,res)=>{
+    Comments.findOne({
+        where: {
+            id : req.body.id
+        }
+    }).then((detail)=>{
+        res.send(detail)
+    })
+})
+app.post('/deletecomment',(req,res)=>{
+    Comments.update({Deleted: true},{where:{id:req.body.id}})
+    res.send("Deleted")
+})
+
 
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{

@@ -109,7 +109,15 @@ const Comments = db.define('comments',{
     ImageSender:{
         type: Seqeulize.STRING,
         allownull: false
-    }
+    },
+    Date:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Time: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
 })
 const Favourites = db.define('favourites',{
     Markedby:{
@@ -172,5 +180,31 @@ const NotificationsComments= db.define('notificationcomments',{
         allownull: false
     }
 })
+const NotificationsFriends = db.define('notificationfriends',{
+    Sender : {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Notification: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Date:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Time: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    SenderImage:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Receiver:{
+        type: Seqeulize.STRING,
+        allownull: false
+    }
+})
 
-exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites,NotificationsRecipes,NotificationsComments}
+exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites,NotificationsRecipes,NotificationsComments,NotificationsFriends}

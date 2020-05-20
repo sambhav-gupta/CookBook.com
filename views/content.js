@@ -92,13 +92,15 @@ alert($('#inpfriendusername').val() + " is already your friend")
 else{
 $.post('/addfriend',{
 username : currentuser,
-friendname : $('#inpfriendusername').val()
+friendname : $('#inpfriendusername').val(),
+image: imgusersrc
 },(data)=>{
 if(data == "Added"){
     friendlist.push($('#inpfriendusername').val())
     
     alert("Added Friend " + $('#inpfriendusername').val())
     $('#inpfriendusername').val("")
+    
 
     return
 }else if(data=="Failed"){
@@ -352,7 +354,13 @@ $('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${da
 $.post('/getcomments',{id : data.id},(data)=>{
 console.log(data)
 for(let i=0;i<data.length;i++){
-    $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}">${data[i].Sender}<img src="${data[i].ImageSender}" style="height:40px;width:40px;"></img> : ${data[i].Comment}</li>`))
+    if(data[i].Deleted){
+        continue
+    }else{
+
+    
+    $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}" onclick="showoptions(this.id)">${data[i].Sender}<img src="${data[i].ImageSender}" style="height:40px;width:40px;"></img> : ${data[i].Comment}<div id="divcomment${data[i].id}" class= "divcommentspecific" style="display:none;"><button id="btn${data[i].id}" onclick="Removecomment(this.id)"></button>${data[i].Date} ${data[i].Time}</div></li>`))
+    }
 }
 })
 }
@@ -373,38 +381,72 @@ if($('.inpcomment'+id).val().length == 0){
     return
 }else{
 
-
+    console.log($('.divrecipe'+id).text())
 $('.comments'+id).append($(`<li>${currentuser} <img src="${imgusersrc}" style="height:40px;width:40px;"></img> : ${$('.inpcomment'+id).val()}</li>`))
 socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
 sender : currentuser,
 senderimage: imgusersrc,
 owner : $('.tname'+id).text(),
 recipeid : id,
-user: currentuser
+user: currentuser,
+recipename: $('.divrecipe'+id).text()
+
 })
 $('.inpcomment'+id).val("")
 }
 }
+
+$('.divcommentspecific').hide()
+
+let clickcounter = 0
+function showoptions(id){
+    clickcounter ++ 
+    if(clickcounter%2==0){
+        $('#divcomment'+id).hide()
+        clickcounter = 0
+        return
+    }else{
+
+    
+
+    $.post('/getdetails',{user : currentuser , id : id},(data)=>
+    {
+      
+        if(data.Owner == currentuser ){
+           console.log("Owner")
+           $('#divcomment'+id).show()
+           
+        }else if(data.Sender == currentuser){
+            console.log("Sender")
+            $('#divcomment'+id).show()
+            
+        }else{
+          
+            return
+        }
+
+    })
+}
+
+}
+function Removecomment(id){
+    let r =  confirm("Are You sure you want to delete this Comment ??")
+    if(r){
+        id = id.split("btn")[1]
+        $.post('/deletecomment',{id : id},(data)=>{
+            $('#'+id).remove()
+            alert(data)
+        })
+       
+    }else{
+        return
+    }
+ }
 socket.on('commentreceive',(data)=>{
-console.log("djkjsdjsd" + data.msg + '-' + data.id)
-$('.comments'+data.recipeid).append($(`<li  id="${data.id}">${data.sender}<img src="${data.senderimage}" style="height:40px;width:40px;"></img> : ${data.msg}</li>`))
-//     {{!-- if(data.owner == currentuser && data.sender!=currentuser){
-//          $('.comments'+data.recipeid).append($(`<li>${data.msg}</li>`))
 
+$('.comments'+data.Recipe).append($(`<li 
+ id="${data.id}" onclick="showoptions(this.id)">${data.Sender}<img src="${data.ImageSender}" style="height:40px;width:40px;"></img> : ${data.Comment}<div id="divcomment${data.id}" class= "divcommentspecific" style="display:none;"><button id="btn${data.id}" onclick="Removecomment(this.id)"></button>${data.Date} ${data.Time}</div></li>`))
 
-//     }else{
-// socket.emit('check',{friend :data.owner,
-//     user: currentuser})
-// socket.on('status',(status)=>{
-//     if(status == true){
-//       console.log(data.msg)
-//         $('.comments'+data.recipeid).append($(`<li>${data.msg}</li>`))
-
-//         return
-//     }
-//     })
-
-// } --}}
 })
 
 // my recipes
@@ -484,7 +526,14 @@ $.post('/getcomments',{id : data[i].id},(list)=>{
 
 console.log(list)
 for(let i=0;i<list.length;i++){
-    $('.comments'+list[i].Recipe).append($(`<li id="${list[i].id}">${list[i].Sender}<img src="${list[i].ImageSender}" style="height:40px;width:40px;"></img> : ${list[i].Comment}</li>`))
+    if(list[i].Deleted){
+        continue
+    }else{
+
+    
+   
+ $('.comments'+list[i].Recipe).append($(`<li id="${list[i].id}" onclick="showoptions(this.id)">${list[i].Sender}<img src="${list[i].ImageSender}" style="height:40px;width:40px;"></img> : ${list[i].Comment}<div id="divcomment${list[i].id}" class= "divcommentspecific" style="display:none;"><button id="btn${list[i].id}" onclick="Removecomment(this.id)"></button>${list[i].Date} ${list[i].Time}</div></li>`))
+    }
 }
 })
 
@@ -655,17 +704,33 @@ function deletemypost(id){
 
 //
 socket.on("notificationrecipe",(data)=>{
-    $('#ulnotification').prepend($(`<li>${data.user} <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img> Posted A Recipe</li>`))
+    $('#ulnotificationrecipes').prepend($(`<li>${data.user}  Posted A Recipe <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
 })
 socket.on("notificationcomment",(data)=>{
-    $('#ulnotification').prepend($(`<li>${data.sender} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img>${data.msg}</li>`))
+    $('#ulnotificationcomments').prepend($(`<li>${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
 })
 
 
-socket.on("gotnotifications",(data)=>{
+socket.on("gotnotificationsrecipes",(data)=>{
   
-    $('#ulnotification').prepend($(`<li>${data.sender}<img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> ${data.msg} </li>`))
+    $('#ulnotificationrecipes').prepend($(`<li>${data.sender} ${data.msg} on ${data.date} at ${data.time} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
 })
+
+socket.on("gotnotificationscomments",(data)=>{
+  
+    $('#ulnotificationcomments').prepend($(`<li>${data.sender} ${data.msg} on ${data.date} at ${data.time} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
+})
+
+socket.on("notifyfriend",(data)=>{
+    $('#ulnotificationfriends').prepend($(`<li>${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> </li>`))
+})
+$.post("/getnotification",{user: currentuser},(data)=>{
+    console.log(data)
+    for(let i=0;i<data.length;i++){
+        $('#ulnotificationfriends').prepend($(`<li>${data[i].Sender} ${data[i].Notification} on ${data[i].Date} at ${data[i].Time} <img src="${data[i].SenderImage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
+    }
+})
+
 
 // logout 
 $('#btnlogout').click(()=>{
