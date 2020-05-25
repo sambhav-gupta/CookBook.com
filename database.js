@@ -159,6 +159,10 @@ const NotificationsComments= db.define('notificationcomments',{
         type: Seqeulize.STRING,
         allownull: false
     },
+    Receiver:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
     Notification: {
         type: Seqeulize.STRING,
         allownull: false
@@ -175,10 +179,7 @@ const NotificationsComments= db.define('notificationcomments',{
         type: Seqeulize.STRING,
         allownull: false
     },
-    Receiver:{
-        type: Seqeulize.STRING,
-        allownull: false
-    }
+  
 })
 const NotificationsFriends = db.define('notificationfriends',{
     Sender : {
@@ -207,4 +208,28 @@ const NotificationsFriends = db.define('notificationfriends',{
     }
 })
 
-exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites,NotificationsRecipes,NotificationsComments,NotificationsFriends}
+const Chats = db.define("chats",{
+    Sender: {
+        type: Seqeulize.STRING,
+    allownull: false
+    },
+    Receiver: {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Message:{
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Time : {
+        type: Seqeulize.STRING,
+        allownull: false
+    },
+    Date: {
+        type: Seqeulize.STRING,
+        allownull: false
+    }
+
+})
+
+exports  = module.exports = {db,Users,Recipes,Friendlist,Comments,Favourites,NotificationsRecipes,NotificationsComments,NotificationsFriends , Chats}

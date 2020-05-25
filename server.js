@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments,NotificationsFriends} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments,NotificationsFriends,Chats} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -46,6 +46,7 @@ var storage = multer.diskStorage({
     
     }
     app.use(express.static('./views'))
+    app.use(express.static('./audios'))
 
     // adding user details to database on signup
     app.post('/signup',(req,res)=>{
@@ -223,6 +224,7 @@ io.on('connection',(socket)=>{
         }).then((comment)=>{
 
             socket.broadcast.emit('commentreceive',comment)
+            
         })
         NotificationsComments.create({
             Sender: data.sender,
@@ -233,7 +235,8 @@ io.on('connection',(socket)=>{
             Receiver: data.owner
         }).then((created)=>{
             io.to(data.owner).emit("notificationcomment",{sender: data.sender , image:data.senderimage , msg:"Commented On Your Recipe "+data.recipename})
-
+           console.log("created comment")
+          
         })
        
     })
@@ -285,7 +288,7 @@ io.on('connection',(socket)=>{
             }
         })
     })
-    socket.on('getnotifications',(data)=>{
+    socket.on('getnotificationsrecipes',(data)=>{
         for(let i=0;i<data.array.length;i++){
             NotificationsRecipes.findAndCountAll({
                 where: {
@@ -302,23 +305,24 @@ io.on('connection',(socket)=>{
             })
 
         }
-        for(let i=0;i<data.array.length;i++){
-            NotificationsComments.findAndCountAll({
-                where: {
-                    Sender: data.array[i],
-                    Receiver: data.user
-                }
-            }).then((notification)=>{
-                if(notification){
-                    for(let i=0;i<notification.count;i++){
-
-                    
-                    io.to(data.user).emit("gotnotificationscomments",{msg : notification.rows[i].dataValues.Notification , image: notification.rows[i].dataValues.SenderImage ,sender: notification.rows[i].dataValues.Sender , date: notification.rows[i].dataValues.Date , time : notification.rows[i].dataValues.Time})
-                    }
-                }
-            })
-        }
+        
     })
+
+    socket.on("msgsend",(data)=>{
+        Chats.create({
+            Sender: data.from,
+            Receiver: data.to,
+            Message: data.msg,
+            Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),
+            Time: new Date().getHours() + ":" + new Date().getMinutes()
+        }).then((message)=>{
+            console.log(message.dataValues)
+            io.to(data.to).emit("msgreceive",message.dataValues)
+        })
+    
+    })
+
+   
     
 })
 // redirection to content page after login
@@ -609,8 +613,49 @@ app.post('/deletecomment',(req,res)=>{
     Comments.update({Deleted: true},{where:{id:req.body.id}})
     res.send("Deleted")
 })
+// myfriends
+app.post('/getfriends',(req,res)=>{
+    let list = []
+    Friendlist.findAndCountAll({
+        where: {
+            Username : req.body.user
+    }}).then((friends)=>{
+        for(let i=0;i<friends.count;i++){
+            list.push(friends.rows[i].dataValues.Friendname)
+        }
+        res.send(list)
+    })
+})
+app.post('/getrecipes',(req,res)=>{
+    let list = []
+    Recipes.findAndCountAll({
+        where:{
+            Uploader : req.body.Owner
+        }
+    }).then((recipes)=>{
+        for(let i=0;i<recipes.count;i++){
+            list.push(recipes.rows[i].dataValues)
+        }
+        res.send(list)
+    })
+})
+app.post('/getchat',(req,res)=>{
+    Chats.findAndCountAll({
+       
+            Receiver : req.body.receiver
+        
+    }).then((chats)=>{
+        let chatlist = []
+        for(let i=0;i<chats.count;i++){
+            if((chats.rows[i].dataValues.Sender == req.body.sender && chats.rows[i].dataValues.Receiver == req.body.receiver) ||  (chats.rows[i].dataValues.Receiver == req.body.sender && chats.rows[i].dataValues.Sender == req.body.receiver)){
+                chatlist.push(chats.rows[i].dataValues)
+            }
+           
+        }
+        res.send(chatlist)
 
-
+    })
+})
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{
     console.log("Server at http://localhost:6789")
