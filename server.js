@@ -440,7 +440,8 @@ app.post('/addfriend',(req,res)=>{
         if(user){
             Friendlist.create({
                 Username: req.body.username,
-                Friendname: req.body.friendname
+                Friendname: req.body.friendname,
+                Image : user.Dp
             })
             NotificationsFriends.create({
                 Sender: req.body.username,
@@ -621,7 +622,7 @@ app.post('/getfriends',(req,res)=>{
             Username : req.body.user
     }}).then((friends)=>{
         for(let i=0;i<friends.count;i++){
-            list.push(friends.rows[i].dataValues.Friendname)
+            list.push(friends.rows[i].dataValues)
         }
         res.send(list)
     })

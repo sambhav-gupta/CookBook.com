@@ -82,6 +82,10 @@ const Friendlist = db.define('friendlist',{
     Friendname:{
         type: Seqeulize.STRING,
         allownull: false
+    },
+    Image:{
+        type: Seqeulize.STRING,
+        allownull: false
     }
 })
 

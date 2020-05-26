@@ -765,6 +765,7 @@ socket.on("gotnotificationsrecipes",(data)=>{
 
 
 socket.on("notifyfriend",(data)=>{
+    
     $('#ulnotificationfriends').prepend($(`<li style="background-color: #468503">${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> </li>`))
 })
 $.post("/getnotification",{user: currentuser},(data)=>{
@@ -775,7 +776,7 @@ $.post("/getnotification",{user: currentuser},(data)=>{
 })
 
 // myfriends
-
+let arrayoffriends = []
 function sendmessage(name){
     socket.emit("msgsend",{from: currentuser , to: name , msg: $('#inpmessage'+name).val()})
     $('#ulchats'+name).append($(`<li style="color:white">${$('#inpmessage'+name).val()}</li>`))
@@ -784,8 +785,19 @@ function sendmessage(name){
 }
 socket.on("msgreceive",(data)=>{
     // alert("You receievd a Message From " + data.Sender)
-   
-    $('#audio').trigger("play")
+    console.log(arrayoffriends)
+   let index = arrayoffriends.findIndex(x => x.friend === data.Sender)
+   console.log(index)
+   if(arrayoffriends[index].status){
+       console.log("openend your chat")
+       $('#audio2').trigger("play")
+   }else{
+      
+       console.log("closed at the moment")
+       $('#audio').trigger("play")
+       alert("You have received a message from " + data.Sender)
+   }
+    
 $('#ulchats'+data.Sender).append($(`<li style="color:green">${data.Message}</li>`))
   let msgs =  $('#count'+data.Sender).text()
   msgs = parseInt(msgs) + 1
@@ -793,10 +805,18 @@ $('#ulchats'+data.Sender).append($(`<li style="color:green">${data.Message}</li>
 
 })
 let onemorecounter =0
+
 function showrecipes(id){
- 
+ console.log(arrayoffriends[0])
     onemorecounter++
     if(onemorecounter%2==0){
+        let name = id.split("div,")[1]
+       
+    let index = arrayoffriends.findIndex(x => x.friend === name)
+    console.log(index)
+       arrayoffriends[index].status = false
+       console.log(arrayoffriends[index])
+        $('#count'+name).text("0")
         $('#divposts').show()
         $('#divfriends').empty()
         $('#divfriends').hide()
@@ -804,12 +824,25 @@ function showrecipes(id){
         $('#diveditrecipe').hide()
         $('#divmyposts').hide()
     }else{
+        
         $('#divaddnewrecipe').hide()
         $('#diveditrecipe').hide()
         $('#divmyposts').hide()
         $('#divposts').hide()
         $('#divfriends').show()
         let name = id.split("div,")[1]
+       
+    let index = arrayoffriends.findIndex(x => x.friend === name)
+    console.log(index)
+    for(let i=0;i<arrayoffriends.length;i++){
+        if(i==index){
+            arrayoffriends[index].status = true
+        }else{
+            arrayoffriends[i].status = false
+        }
+    }
+      
+       console.log(arrayoffriends[index])
         $('#count'+name).text("0")
         // $('#count'+name).hide()
         
@@ -837,7 +870,7 @@ firsttime = data[i].Date
 
         })
         $('#divfriends').append($(`
-        <div style="text-align:center;color:white;" class="divreceiver">${name}</div>
+        <div style="text-align:center;color:white;font-size:15pt;height:50px;" class="divreceiver">${name}<br></div>
         <div style="height:575px;color:white">
         <ul id="ulchats${name}" style="height:500px;overflow-y:scroll;">
         </ul>
@@ -855,7 +888,18 @@ firsttime = data[i].Date
     }
 }
 
+
 let counterr =0
+
+$.post('/getfriends',{user : currentuser},(data)=>{
+      
+    for(let i=0;i<data.length;i++){
+       
+        let friend = data[i].Friendname
+        let status = false
+       arrayoffriends.push({friend , status})
+    }
+})
 $('#myfriends').click(()=>{
     counterr ++ 
     if(counterr%2==0){
@@ -865,16 +909,23 @@ $('#myfriends').click(()=>{
     }else{
     $('#divfriendlist').show()
     $.post('/getfriends',{user : currentuser},(data)=>{
+       
         for(let i=0;i<data.length;i++){
+            
+           
+          
         $('#divfriendlist').append($(`
-        <div id="div,${data[i]}" style="background-color:green;text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i]}
+        <div id="div,${data[i].Friendname}" style="background-color:green;text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
         <span style="height:10px;width:10px;background-color:white;font-size:8pt;" id="count${data[i]}">0</span>
       </div>
         `))
         }
     })
+   
 }
 })
+
+
 
 // logout 
 $('#btnlogout').click(()=>{
