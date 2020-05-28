@@ -68,6 +68,11 @@ const Recipes = db.define('recipe',{
         type: Seqeulize.STRING,
         allownull: false
     },
+    Date:{
+        type: Seqeulize.STRING,
+        allownull: false
+    }
+    ,
     UploaderImage:{
         type: Seqeulize.STRING,
         allownull: false

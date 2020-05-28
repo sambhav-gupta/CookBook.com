@@ -10,7 +10,12 @@ let imgusersrc = $('#imguser').attr("src")
     let userlist = []
     let friendlist =[]
     let arrayoffriends = []
-   
+    let clicknumber = 0
+    let clickcounter = 0
+    let countclick =0 
+    let onemorecounter =0
+    let counterr =0
+    let btnuploadcount = 0
    
 // get all users for search purpose for adding friends            
 $.post('/getallusers',(data)=>{
@@ -71,22 +76,7 @@ $('#searcheduser').hide()
 }
 })
 
-let count = 0
-$('#addnewrecipe').click(()=>{
-    for(let i=0;i<arrayoffriends.length;i++){
-            
-          
-        arrayoffriends[i].status = false
-    
-}
-count++
-if(count%2==0){
-$('#divaddnewrecipe').hide()
-}else{
-$('#divaddnewrecipe').show()
-}
 
-})
 // adding friends
 $('#btnaddnewfriend').click(()=>{
     
@@ -125,7 +115,7 @@ if(data == "Added"){
 
 
 $('#share').hide()
-let clicknumber = 0
+
 $('#btnaddnewrecipe').click(()=>{
     for(let i=0;i<arrayoffriends.length;i++){
             
@@ -133,15 +123,29 @@ $('#btnaddnewrecipe').click(()=>{
         arrayoffriends[i].status = false
     
 }
+clickcounter =0;
+countclick = 0;
+onemorecounter = 0;
+
+
+console.log("test " +  clicknumber)
+
     clicknumber++
+    console.log("test " +  clicknumber)
     if(clicknumber%2==0){
+        $('#addnewrecipe').css("background-color", "transparent")
         $('#divposts').show()
         $('#divaddnewrecipe').hide()
         $('#divmyposts').hide()
         $('#diveditrecipe').hide()
         $('#divfriends').hide()
     }else{
+        $('#addnewrecipe').css("background-color", "green")
+        $('#myrecipes').css("background-color","transparent")
+        $('#myfriends').css("background-color","transparent")
+        $('#divfriendlist').hide()
         $('#diveditrecipe').hide()
+        counterr = 0
         $('#divfriends').hide()
         $('#divposts').hide()
         $('#divmyposts').hide()
@@ -151,7 +155,7 @@ $('#btnaddnewrecipe').click(()=>{
 })
 $('#btnaddtolist').click(()=>{
 
-$('#divaddnewrecipe').show()
+
 let Ingredient = $('#inpingredient').val()
 let Quantity = $('#inpquantity').val()
 let unit =  $('#unit option:selected').val()
@@ -214,22 +218,28 @@ $(this).remove();
 $("#olsteps").on("click","li t",function() {
 $(this).parent().remove();
 })
-let btnuploadcount = 0
+
 $('#btnupload').click(()=>{
 btnuploadcount++
-console.log(btnuploadcount)
+
 
 let file = $('#inprecipeimage')[0].files[0]
-
+if(file == undefined){
+    alert("Please Select An Image To Upload It !!!!")
+    btnuploadcount = 0
+}
+if(btnuploadcount == 1){
 const source = URL.createObjectURL(file);
 $('#showimage').append($(`
 <img src="${source}"  class="img-fluid" alt="Responsive image">
 `))
 $('#share').show()
-btnuploadcount=0
+
+}
 
 })
 $('#showimage').on("click","img",function(e){
+    btnuploadcount = 0
 e.stopPropagation();
 $(this).remove()
 $('#inprecipeimage').val("")
@@ -287,6 +297,7 @@ data: formData,
 success: function(data){
     socket.emit("notify",{user : currentuser,userimage : imgusersrc})
 alert(data)
+window.location.replace('/content')
 
 
 },
@@ -333,6 +344,7 @@ socket.emit('getrecipe',data[i])
 
 console.log(recipelist)
 socket.on('foundrecipe',(data)=>{
+    
 if(data.Deleted == 1){
     return
 }else{
@@ -341,7 +353,7 @@ if(data.Deleted == 1){
 
 $('#divposts').append($(`
 <div class="divname${data.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.UploaderImage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.id}" style="font-weight:bold;color:white;">${data.Uploader} </t></div>
-<div class="divtime${data.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.createdAt.split("T")[0]}</div>
+<div class="divtime${data.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.Date} at ${data.Time}</div>
 
 <div class="divrecipe${data.id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color:white;padding:5px;">${data.NameOfDish}</div>
 
@@ -440,8 +452,12 @@ $('.inpcomment'+id).val("")
 
 $('.divcommentspecific').hide()
 
-let clickcounter = 0
+
 function showoptions(id){
+    clicknumber = 0;
+    countclick = 0;
+    onemorecounter =0;
+
     clickcounter ++ 
     if(clickcounter%2==0){
         $('#divcomment'+id).hide()
@@ -491,7 +507,7 @@ $('.comments'+data.Recipe).append($(`<li  style="color: white;"
 
 // my recipes
 
-let countclick =0 
+
 $('#myrecipes').click(()=>{
     for(let i=0;i<arrayoffriends.length;i++){
             
@@ -499,25 +515,40 @@ $('#myrecipes').click(()=>{
         arrayoffriends[i].status = false
     
 }
+clicknumber =0;
+clickcounter = 0;
+onemorecounter = 0;
+
 countclick++
 console.log(countclick)
 if(countclick%2==0){
     $('#diveditrecipe').hide()
 $('#divmyposts').hide()
 $('#divaddnewrecipe').hide()
-
-
+$('#divfriends').empty()
+$('#divfriends').hide()
+$('#myrecipes').css("background-color","transparent")
  $('#divposts').show()
  
 }else{
-
+    $('#divfriends').empty()
+    $('#divfriends').hide()
   console.log("clicked")
+  $('#myrecipes').css("background-color","green")
   $('#diveditrecipe').hide()
+  $('#divmyposts').empty()
 $('#divmyposts').show()
+$('#addnewrecipe').css("background-color","transparent")
+$('#myfriends').css("background-color","transparent")
+counterr = 0
+$('#divfriendlist').hide()
 $('#divposts').hide()
 $('#divaddnewrecipe').hide()
 $.post('/myrecipes',{username: currentuser},(data)=>{
 console.log(data)
+if(data.length ==0){
+    $('#divmyposts').append($(`<ul style="color:white"><li>You Have No Recipes . Please Add One .</li></ul>`))
+}else{
 for(let i=0;i<data.length;i++){
     if(data[i].Deleted){
         continue
@@ -532,7 +563,7 @@ $('#divmyposts').append($(`
 <path fill-rule="evenodd" d="M2.5 1a1 1 0 00-1 1v1a1 1 0 001 1H3v9a2 2 0 002 2h6a2 2 0 002-2V4h.5a1 1 0 001-1V2a1 1 0 00-1-1H10a1 1 0 00-1-1H7a1 1 0 00-1 1H2.5zm3 4a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7a.5.5 0 01.5-.5zM8 5a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7A.5.5 0 018 5zm3 .5a.5.5 0 00-1 0v7a.5.5 0 001 0v-7z" clip-rule="evenodd"/>
 </svg></button>
 </div>
-<div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace;color: white;padding:5px;">${data[i].Time}</div>
+<div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace;color: white;padding:5px;">${data[i].Date} at ${data[i].Time}</div>
     <div class="divrecipe${data[i].id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color: white;padding:5px;">${data[i].NameOfDish}</div>
 `))
 let arrayofsteps = data[i].Method.split(",")
@@ -599,6 +630,7 @@ for(let i=0;i<list.length;i++){
 
 }
 }
+}
 })
 
 }
@@ -651,16 +683,28 @@ function edit(id){
                 console.log(btnuploadcount)
                 
                 let file = $('#inprecipeimageedit')[0].files[0]
-                
-                const source = URL.createObjectURL(file);
-                $('#showimageedit').append($(`
-                <img src="${source}"  class="img-fluid" alt="Responsive image">
-                `))
-                $('#shareedit').show()
-                btnuploadcount=0
+                if(file == undefined){
+                    alert("No file Selected")
+                    btnuploadcount = 0
+
+                }else{
+                    $('#showimageedit').empty()
+                }
+                if(btnuploadcount == 1){
+                    
+                    const source = URL.createObjectURL(file);
+                    $('#showimageedit').append($(`
+                    <img src="${source}"  class="img-fluid" alt="Responsive image">
+                    `))
+                    $('#shareedit').show()
+                    $('#inprecipeimageedit')[0].files[0] = null
+                  btnuploadcount = 0;
+                }
+               
                 
                 })
                 $('#showimageedit').on("click","img",function(e){
+                    btnuploadcount=0
                 e.stopPropagation();
                 $(this).remove()
                 $('#inprecipeimageedit').val("")
@@ -785,6 +829,7 @@ function deletemypost(id){
         id = id.split("btndelete")[1]
         $.post('/deleterecipe',{id:id},(data)=>{
             alert(data)
+            window.location.replace('/content')
         })
     }else{
         return
@@ -795,7 +840,7 @@ function deletemypost(id){
 //
 socket.on("notificationrecipe",(data)=>{
     $('#audio').trigger("play")
-    $('#ulnotificationrecipes').prepend($(`<li><t style="color: #000000;font-weight:bolder;">${data.user}  Posted A Recipe <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
+    $('#ulnotificationrecipes').prepend($(`<li><t style="color: #000000;font-weight:bolder;background-color:yellow;">${data.user}  Posted A Recipe <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
 })
 
 
@@ -808,7 +853,7 @@ socket.on("gotnotificationsrecipes",(data)=>{
 
 socket.on("notifyfriend",(data)=>{
     $('#audio').trigger("play")
-    $('#ulnotificationfriends').prepend($(`<li><t style="color: #000000;font-weight:bolder;">${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> </li>`))
+    $('#ulnotificationfriends').prepend($(`<li><t style="color: #000000;font-weight:bolder;background-color:yellow;">${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> </li>`))
 })
 $.post("/getnotification",{user: currentuser},(data)=>{
     console.log(data)
@@ -821,7 +866,7 @@ $.post("/getnotification",{user: currentuser},(data)=>{
 
 function sendmessage(name){
     socket.emit("msgsend",{from: currentuser , to: name , msg: $('#inpmessage'+name).val()})
-    $('#ulchats'+name).append($(`<li style="color:white">${$('#inpmessage'+name).val()}</li>`))
+    $('#ulchats'+name).append($(`<li style="color:white;margin-left:350px;background-color:green;border-radius:25px;text-align:center;">${$('#inpmessage'+name).val()}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
     $('#inpmessage'+name).val("")
    
 }
@@ -838,17 +883,17 @@ socket.on("msgreceive",(data)=>{
    }else{
     
      $('#popup').empty()
-       console.log("closed at the moment")
+       
        $('#audio').trigger("play")
        
       let timeout=  setTimeout(() => {
-        $('#popup').append($(`<t style="font-size:10pt;">You have received a message from ${data.Sender}</t>`))
+        $('#popup').append($(`<t style="font-size:10pt;color:black;background-color:yellow;text-align:center;font-weight:bolder;">You have received a message from ${data.Sender}</t>`))
         $('#popup').show()
        }, 1000);
      
        setTimeout(() => {
           $('#popup').hide()
-       }, 5000);
+       }, 2000);
        let msgs =  $('#count'+data.Sender).text()
   msgs = parseInt(msgs) + 1
   $('#count'+data.Sender).text(`${msgs}`)
@@ -856,15 +901,22 @@ socket.on("msgreceive",(data)=>{
     //    alert("You have received a message from " + data.Sender)
    }
     
-$('#ulchats'+data.Sender).append($(`<li style="color:green">${data.Message}</li>`))
+$('#ulchats'+data.Sender).append($(`<li style="color:white;background-color:red;margin-right:350px;border-radius:25px;text-align:center;">${data.Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
  
 
 })
-let onemorecounter =0
+
 
 function showrecipes(id){
  console.log(arrayoffriends[0])
+ countclick =0;
+ clickcounter =0;
+ clicknumber =0;
+
+
+ console.log(onemorecounter)
     onemorecounter++
+    console.log(onemorecounter)
     if(onemorecounter%2==0){
         let name = id.split("div,")[1]
        
@@ -872,6 +924,7 @@ function showrecipes(id){
     console.log(index)
        arrayoffriends[index].status = false
        console.log(arrayoffriends[index])
+
         $('#count'+name).text("0")
         $('#divposts').show()
         $('#divfriends').empty()
@@ -879,15 +932,21 @@ function showrecipes(id){
         $('#divaddnewrecipe').hide()
         $('#diveditrecipe').hide()
         $('#divmyposts').hide()
+ 
     }else{
+     
         
         $('#divaddnewrecipe').hide()
         $('#diveditrecipe').hide()
         $('#divmyposts').hide()
         $('#divposts').hide()
         $('#divfriends').show()
+        $('#myrecipes').css("background-color","transparent")
+        $('#addnewrecipe').css("background-color","transparent")
+    
+   
         let name = id.split("div,")[1]
-       
+     
     let index = arrayoffriends.findIndex(x => x.friend === name)
     console.log(index)
     for(let i=0;i<arrayoffriends.length;i++){
@@ -904,36 +963,36 @@ function showrecipes(id){
         
         $.post('/getchat',{receiver : name , sender: currentuser},(data)=>{
             let firsttime = data[0].Date
-            $('#ulchats'+name).append(`<div class="date" style="height:100px;text-align:center;font-weight:bold;">${firsttime}</div>`)
+            $('#ulchats'+name).append(`<div class="date" style="height:30px;text-align:center;font-weight:bold;color:white;background-color:black;border-radius:25px;">${firsttime}</div><br>`)
             for(let i=0;i<data.length;i++){
                 if(data[i].Date != firsttime){
-                    $('#ulchats'+name).append(`<div class="date" style="height:50px;text-align:center;font-weight:bold;">${data[i].Date}</div>`)
+                    $('#ulchats'+name).append(`<div class="date" style="height:30px;text-align:center;font-weight:bold;color:white;background-color:black;border-radius:25px;">${data[i].Date}</div><br>`)
 firsttime = data[i].Date
                 }
 
                 if(data[i].Sender == name){
                    
-                        $('#ulchats'+name).append($(`<li style="color:green">${data[i].Message}</li>`))
+                        $('#ulchats'+name).append($(`<li style="color:white;background-color:red;margin-right:350px;border-radius:25px;text-align:center;">${data[i].Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${data[i].Time}</li><br>`))
                         continue;
                     
                  
                    
                 }else{
 
-                    $('#ulchats'+name).append($(`<li style="color:white;margin-left:400px;">${data[i].Message}</li>`))
+                    $('#ulchats'+name).append($(`<li style="color:white;margin-left:350px;background-color:green;border-radius:25px;text-align:center;">${data[i].Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${data[i].Time}</li><br>`))
                 }
             }
 
         })
         $('#divfriends').append($(`
-        <div style="text-align:center;color:white;font-size:15pt;height:50px;" class="divreceiver">${name}<br></div>
-        <div style="height:575px;color:white">
+        <div style="text-align:center;color:white;font-size:15pt;height:50px;background-color: #700e09;border-radius:30px;position:sticky;top:10px;" class="divreceiver">${name}<br></div>
+        <br><div style="height:575px;color:white">
         <ul id="ulchats${name}" style="height:500px;overflow-y:scroll;">
         </ul>
         </div>
-        <div>
-<input placeholder="Write a Message...." id="inpmessage${name}" style="width:400px;margin-left:50px;color:white;"></input>
-<button class="btn btn-danger btn-xsm" class="btnsend" id="${name}" onclick="sendmessage(this.id)">Send</button>
+        <div style="position:sticky;bottom:10px;">
+<input placeholder="Write a Message...." id="inpmessage${name}" style="width:400px;margin-left:50px;color:white;background-color:black;border-radius: 30px;"></input>
+<button class="btn btn-danger btn-xsm" class="btnsend" id="${name}" onclick="sendmessage(this.id)" style="margin-bottom:10px;">Send</button>
 
         </div>
         `))
@@ -942,10 +1001,11 @@ firsttime = data[i].Date
   
       
     }
+  
 }
 
 
-let counterr =0
+
 
 
 $.post('/getfriends',{user : currentuser},(data)=>{
@@ -957,8 +1017,8 @@ $.post('/getfriends',{user : currentuser},(data)=>{
        
       
     $('#divfriendlist').append($(`
-    <div id="div,${data[i].Friendname}" style="background-color:green;text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
-    <span style="height:10px;width:10px;background-color:red;font-size:8pt;display:none;" id="count${data[i].Friendname}">0</span>
+    <div id="div,${data[i].Friendname}" style="text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
+    <span style="height:10px;background-color:red;font-size:12pt;display:none;font-weight:bold;" id="count${data[i].Friendname}">0</span>
   </div>
     `))
     }
@@ -971,28 +1031,50 @@ $('#myfriends').click(()=>{
         arrayoffriends[i].status = false
     
 }
+clickcounter =0;
+clicknumber = 0;
+onemorecounter = 0;
+countclick = 0;
     counterr ++ 
+    console.log(counterr)
     if(counterr%2==0){
         
           
         $('#divfriendlist').hide()
-       
-        return
+        $('#divfriends').hide()
+        $('#divposts').show()
+        $('#myfriends').css("background-color","transparent")
+    
     }else{
+        $('#myfriends').css("background-color","red")
+      
     $('#divfriendlist').show()
     
    
 }
 })
 
+// function hoverthis
 
+function hoverthis(id){
+    $('#'+id).css("background-color", "#01535c")
+}
 
+function donthoverthis(id){
+    $('#'+id).css("background-color","transparent")
+}
 // logout 
 $('#btnlogout').click(()=>{
-$.post('/logout',(data)=>{
-console.log(data)
-if(data=="done"){
-window.location.replace('/')
-}
-})
+    let descision = confirm("Are you sure to Sign Out ??")
+    if(descision){
+        $.post('/logout',(data)=>{
+            console.log(data)
+            if(data=="done"){
+            window.location.replace('/')
+            }
+            })
+    }else{
+        return
+    }
+
 })

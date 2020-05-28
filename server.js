@@ -418,6 +418,7 @@ var storagerecipe = multer.diskStorage({
                 Cuisine : req.body.cuisine,
                 Deleted : false,
                 Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
+                Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),
                 UploaderImage: req.body.uploaderimage
            })
            
@@ -470,11 +471,14 @@ app.post('/myrecipes',(req,res)=>{
             Uploader: req.body.username
         }
     }).then((recipe)=>{
+        if(recipe){
         for(let i=0;i<recipe.count;i++){
             myrecipes.push(recipe.rows[i].dataValues)
         }
         res.send(myrecipes)
-
+    }else{
+        res.send("No")
+    }
     })
 })
 
