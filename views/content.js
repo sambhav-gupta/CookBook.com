@@ -349,9 +349,9 @@ if(data.Deleted == 1){
     return
 }else{
 
+$('#divposts').prepend($(`<div id="posts${data.id}"></div>`))
 
-
-$('#divposts').append($(`
+$('#posts'+data.id).append($(`
 <div class="divname${data.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.UploaderImage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.id}" style="font-weight:bold;color:white;">${data.Uploader} </t></div>
 <div class="divtime${data.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.Date} at ${data.Time}</div>
 
@@ -360,7 +360,7 @@ $('#divposts').append($(`
 `))
 let arrayofsteps = data.Method.split(",")
 let arrayofingredients = data.Ingredients.split(",")
-$('#divposts').append($(`
+$('#posts'+data.id).append($(`
 <br>
 <div style="color: white;padding:5px;">
 <t style="font-family:monospace;font-size:15pt;font-weight:bold;color: white;">Ingredients:</t><ul class="ulingredients${data.id}" style="color: white;">
@@ -371,7 +371,7 @@ for(let i=0;i<arrayofingredients.length;i++){
 $('.ulingredients'+data.id).append($(`<li style="font-family:monospace;font-size:12pt;color: white;">${arrayofingredients[i]}</li>`))
 }
 
-$('#divposts').append($(`
+$('#posts'+data.id).append($(`
 <div style="color: white;padding:5px;">   
 <t style="font-size:15pt;font-family:monospace;font-weight:bold;color: white;">Recipe:</t><ol class="ulmethod${data.id}" style="color: white;">
     </ol>
@@ -382,9 +382,9 @@ for(let i=0;i<arrayofsteps.length;i++){
 $('.ulmethod'+data.id).append($(`<li style="color:white;">${arrayofsteps[i]}</li>`))
 
 }
-$('#divposts').append($(`<br><img src="${data.Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
+$('#posts'+data.id).append($(`<br><img src="${data.Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
 
-$('#divposts').append($(`
+$('#posts'+data.id).append($(`
 <br><br><div class="commentbox${data.id}" style="height:200px;border:2px solid black;color: white;">
 <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
 <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
@@ -897,7 +897,7 @@ socket.on("msgreceive",(data)=>{
      
        setTimeout(() => {
           $('#popup').hide()
-       }, 2000);
+       },3000);
        let msgs =  $('#count'+data.Sender).text()
   msgs = parseInt(msgs) + 1
   $('#count'+data.Sender).text(`${msgs}`)
@@ -922,7 +922,7 @@ function showrecipes(id){
     onemorecounter++
     console.log(onemorecounter)
     if(onemorecounter%2==0){
-        let name = id.split("div,")[1]
+        let name = id.split(",")[0]
        
     let index = arrayoffriends.findIndex(x => x.friend === name)
     console.log(index)
@@ -949,7 +949,8 @@ function showrecipes(id){
         $('#addnewrecipe').css("background-color","transparent")
     
    
-        let name = id.split("div,")[1]
+        let name = id.split(",")[0]
+        let srcimage = id.split(",")[1]
      
     let index = arrayoffriends.findIndex(x => x.friend === name)
     console.log(index)
@@ -989,7 +990,7 @@ firsttime = data[i].Date
 
         })
         $('#divfriends').append($(`
-        <div style="text-align:center;color:white;font-size:15pt;height:50px;background-color: #700e09;border-radius:30px;position:sticky;top:10px;" class="divreceiver">${name}<br></div>
+        <div style="text-align:center;color:white;font-size:15pt;height:50px;background-color: #700e09;border-radius:30px;position:sticky;top:10px;" class="divreceiver">${name}   <img src="${srcimage}" style="height:40px;width:40px;border-radius:50%;margin-top:5px;"></img><br></div>
         <br><div style="height:575px;color:white">
         <ul id="ulchats${name}" style="height:500px;overflow-y:scroll;">
         </ul>
@@ -1021,7 +1022,7 @@ $.post('/getfriends',{user : currentuser},(data)=>{
        
       
     $('#divfriendlist').append($(`
-    <div id="div,${data[i].Friendname}" style="text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
+    <div id="${data[i].Friendname},${data[i].Image}" style="text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
     <span style="height:10px;background-color:red;font-size:12pt;display:none;font-weight:bold;" id="count${data[i].Friendname}">0</span>
   </div>
     `))
