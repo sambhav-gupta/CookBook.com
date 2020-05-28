@@ -128,6 +128,7 @@ Users.findOne({
 
 app.use(express.static('profilepictures'))
 app.use(express.static('recipepics'))
+app.use(express.static('wallpapers'))
 
 
 // rendering content page if the user is signed up or logged in successfully
@@ -446,7 +447,7 @@ app.post('/addfriend',(req,res)=>{
             NotificationsFriends.create({
                 Sender: req.body.username,
                 Notification: "Added You as a Friend",
-                Date: new Date().getDate() + '-' + new Date().getMonth() + 1 + '-' + new Date().getFullYear(),
+                Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
                 Time: new Date().getHours() + ':' + new Date().getMinutes(),
                 Receiver: req.body.friendname,
                 SenderImage : req.body.image

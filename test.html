@@ -7,16 +7,21 @@
     <script src="http://code.jquery.com/jquery-3.4.1.js"></script>
 </head>
 <body>
-    <input type="radio" name="q"  value="A" class="radio"> A
-    <input type="radio" name="q"  value="B" class="radio">B
-   <script>
-
-$('.radio').click(()=>{
-    console.log( $( "input:checked" ).val())
-})
   
+  <button id="btn">Click</button>
 
 
-   </script> 
+   <script>
+     function set(){
+      let time =   setInterval(() => {
+        alert("test")
+      }, 5000);
+     }
+     $('#btn').click(()=>{
+   set()
+     
+     })
+     clearInterval(time)
+   </script>
 </body>
 </html>

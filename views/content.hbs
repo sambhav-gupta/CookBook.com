@@ -14,9 +14,9 @@
         display: inline;
 
     }
-     *{
+     {{!-- *{
          background-color: #311559;
-     }
+     } --}}
      #cuisine option{
          background-color: white;
      }
@@ -35,10 +35,16 @@
     <audio id="audio" src="swiftly.mp3" style="display: none;"></audio>
     <audio id="audio2" src="whatsapp_incoming.mp3" style="display: none;"></audio>
     <!-- {{!-- Heading div to display name of the website and greetings --}} -->
-   <div id="divheading" style=" height: 100px;text-align: center;color:white;font-size: 30pt;font-weight: bold;font-family: sans-serif;border-bottom: 1px solid black;">Welcome To Somerandomname.com</div>
+    
+
+   <div id="divheading" style=" height: 100px;text-align: center;color:white;font-size: 25pt;font-weight: bold;font-family: sans-serif;border-bottom: 1px solid black;background-image: url('wallpaper6.jpg');background-size: 300px 100px;">
+       <br>Welcome To Somerandomname.com
+       <div style="height: 50px;width:1000px;background-color:white;position:fixed;top:10px;left:100px;display:none" id="popup"></div>
+       </div>
+
    <!-- {{!-- Sidebar div to display myfriends myrecipes add friends and recipes .etc --}} -->
    
-<div id="divsidebar" style="width: 300px;border-right: 2px solid black;display: inline-block;vertical-align: top;height:666px;">
+<div id="divsidebar" style="background-image: url('wallpaper3.jpg');width: 300px;border-right: 2px solid black;display: inline-block;vertical-align: top;height:666px;">
     
     <!-- {{!-- user info --}} -->
     <div id="divuserinfo" style="border-bottom: 2px solid black;padding: 10px;font-family: sans-serif;font-size: 12pt;font-weight: bold;color:white ">
@@ -100,10 +106,10 @@ Logout&nbsp;
  <!-- {{!-- Main Div starts --}} -->
 
   <div id="main" style="display: inline-block;width:600px;">
-    <div id="divposts" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;padding:10px;background-color:green;">
+    <div id="divposts" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;padding:10px;background-image: url('wallpaper3.jpg');background-size: 800px ;">
     </div>
        <!-- div to add new recipe -->
-  <div id="divaddnewrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-color: #311559">
+  <div id="divaddnewrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-image:url('wallpaper10.jpg');">
     <form method="POST" enctype="multipart/form-data" id="frmaddrecipe" class="form-inline">
         &nbsp;&nbsp;
        <input class="form-control" placeholder="Name Of The Dish" id="inpnameofdish" style="width: 200px;" name="nameofdish"> &nbsp;&nbsp;&nbsp;
@@ -179,14 +185,14 @@ Logout&nbsp;
 
 
 {{!-- div to show user's posts --}}
-<div id="divmyposts" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-color:yellow;padding:10px;">
+<div id="divmyposts" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-image:url('wallpaper13.jpg');padding:10px;">
 </div>
 {{!-- div to edit posts --}}
 <div id="divfriends" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;padding:10px;background-color:grey;">
 </div>
 
 
- <div id="diveditrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-color: #311559; ">
+ <div id="diveditrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-image: url('wallpaper12.jpg') ;background-size: 400px 600px;">
      
     <form method="POST" enctype="multipart/form-data" id="frmeditrecipe" class="form-inline">
         &nbsp;&nbsp;
@@ -268,13 +274,13 @@ Logout&nbsp;
     
  
 
-       <div id="divnotification" style="height: 666px;width:442px;background-color: #311559;display:inline-block;color: white;padding:10px;vertical-align: top;">Notifications<br>
+       <div id="divnotification" style="height: 666px;width:442px;background-image: url('wallpaper3.jpg');background-size:450px;display:inline-block;color: white;padding:10px;vertical-align: top;">Notifications<br>
         Friends
-        <ul id="ulnotificationfriends" style="height: 150px;overflow-y:scroll;background-color: #468503">
+        <ul id="ulnotificationfriends" style="height: 150px;overflow-y:scroll;background-image:url('wallpaper8.jpg')">
         
     </ul>
     Recipes
-    <ul id="ulnotificationrecipes"  style="height: 150px;overflow-y:scroll;background-color: #b667c2">
+    <ul id="ulnotificationrecipes"  style="height: 150px;overflow-y:scroll;background-image:url('wallpaper8.jpg');">
         
     </ul>
     
