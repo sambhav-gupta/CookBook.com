@@ -295,8 +295,10 @@ url: '/addrecipe',
 type: 'POST',
 data: formData,
 success: function(data){
-    socket.emit("notify",{user : currentuser,userimage : imgusersrc})
-alert(data)
+    console.log(data)
+    socket.emit("notify",{user : currentuser,userimage : imgusersrc , details: data})
+alert("Uploaded")
+
 window.location.replace('/content')
 
 
@@ -389,7 +391,7 @@ $('#posts'+data.id).append($(`
 <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
 <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
 </ul>
-<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;color:white;" placeholder="Write A Comment About This Dish.....">
+<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data.id},btn btn-success btn-xsm" onclick="Send
 (this)" >SEND</button>
 </div><br>
@@ -413,6 +415,7 @@ for(let i=0;i<data.length;i++){
     $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}" onclick="showoptions(this.id)" style="color:wh;">${data[i].Sender}<img src="${data[i].ImageSender}" style="height:20px;width:20px;border-radius:50%;"></img> : ${data[i].Comment}<div id="divcomment${data[i].id}" class= "divcommentspecific" style="color:black;display:none;background-color:yellow;font-size:8pt;border: 2px solid green;width:170px;padding:2px;"><button id="btn${data[i].id}" style="background-color: red;"  onclick="Removecomment(this.id)"><svg style="background-color:red;" class="bi bi-trash-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" d="M2.5 1a1 1 0 00-1 1v1a1 1 0 001 1H3v9a2 2 0 002 2h6a2 2 0 002-2V4h.5a1 1 0 001-1V2a1 1 0 00-1-1H10a1 1 0 00-1-1H7a1 1 0 00-1 1H2.5zm3 4a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7a.5.5 0 01.5-.5zM8 5a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7A.5.5 0 018 5zm3 .5a.5.5 0 00-1 0v7a.5.5 0 001 0v-7z" clip-rule="evenodd"/>
   </svg></button> on ${data[i].Date} at ${data[i].Time} </div></li>`))
+  $('.comments'+data[i].Recipe).scrollTop($('.comments'+data[i].Recipe)[0].scrollHeight);
     }
 }
 })
@@ -427,6 +430,7 @@ function Send(obj){
    
 let id = $(obj).attr('class')
 console.log(id)
+console.log(id)
 
 id = id.split(",")[0]
 id = id.split("btncomment")[1]
@@ -437,6 +441,7 @@ if($('.inpcomment'+id).val().length == 0){
 
     console.log($('.divrecipe'+id).text())
 $('.comments'+id).append($(`<li style="color: white">${currentuser} <img src="${imgusersrc}" style="height:20px;width:20px;border-radius:50%;"></img> : ${$('.inpcomment'+id).val()}</li>`))
+$('.comments'+id).scrollTop($('.comments'+id)[0].scrollHeight);
 socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
 sender : currentuser,
 senderimage: imgusersrc,
@@ -446,9 +451,12 @@ user: currentuser,
 recipename: $('.divrecipe'+id).text()
 
 })
+ 
 $('.inpcomment'+id).val("")
 }
 }
+
+
 
 $('.divcommentspecific').hide()
 
@@ -470,12 +478,16 @@ function showoptions(id){
     $.post('/getdetails',{user : currentuser , id : id},(data)=>
     {
       
-        if(data.Sender == currentuser){
+        if(data.Sender.trim() == currentuser.trim()){
             console.log("sender == currentuser")
             $('#divcomment'+id).show()
-        }else if(data.Owner == currentuser){
+
+        }else if(data.Owner.trim() == currentuser.trim()){
             console.log("owner == currentuser")
             $('#divcomment'+id).show()
+        }else{
+            console.log("else")
+            return
         }
         
 
@@ -496,13 +508,25 @@ function Removecomment(id){
         return
     }
  }
+ 
 
 socket.on('commentreceive',(data)=>{
-   
-
+  
+if(data.Owner.trim() == currentuser.trim()){
+    $('#popup').empty()
+    $('#audio').trigger("play")
+    let timeout=  setTimeout(() => {
+        $('#popup').append($(`<t style="font-size:10pt;color:black;background-color:yellow;text-align:center;font-weight:bolder;">${data.Sender} Commented On Your Recipe</t>`))
+        $('#popup').show()
+       }, 1000);
+     
+       setTimeout(() => {
+          $('#popup').hide()
+       },3000);
+}
 $('.comments'+data.Recipe).append($(`<li  style="color: white;"
  id="${data.id}" onclick="showoptions(this.id)">${data.Sender}<img src="${data.ImageSender}" style="height:20px;width:20px;border-radius:50%;"></img> : ${data.Comment}<div id="divcomment${data.id}" class= "divcommentspecific" style="color:black;display:none;background-color:yellow;font-size:8pt;border: 2px solid green;width:170px;padding:2px;"><button id="btn${data.id}" onclick="Removecomment(this.id)"></button>${data.Date} ${data.Time}</div></li>`))
-
+ $('.comments'+data.Recipe).scrollTop($('.comments'+data.Recipe)[0].scrollHeight);
 })
 
 // my recipes
@@ -545,15 +569,14 @@ $('#divfriendlist').hide()
 $('#divposts').hide()
 $('#divaddnewrecipe').hide()
 $.post('/myrecipes',{username: currentuser},(data)=>{
-console.log(data)
-if(data.length ==0){
-    $('#divmyposts').append($(`<ul style="color:white"><li>You Have No Recipes . Please Add One .</li></ul>`))
-}else{
+
+
 for(let i=0;i<data.length;i++){
     if(data[i].Deleted){
         continue
     }else{
-$('#divmyposts').append($(`
+        $('#divmyposts').prepend($(`<div id="myposts${data[i].id}"></div>`))
+$('#myposts'+data[i].id).append($(`
 <div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace;font-weight:bold;color: white;padding:5px;"><img src="${data[i].UploaderImage}" style="height:40px;width:40px;border-radius:50%;"></img> ${data[i].Uploader} <button id="btnedit${data[i].id}" onclick="edit(this.id)" style="background-color:green;"><svg style="background-color: green" class="bi bi-pen" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M5.707 13.707a1 1 0 01-.39.242l-3 1a1 1 0 01-1.266-1.265l1-3a1 1 0 01.242-.391L10.086 2.5a2 2 0 012.828 0l.586.586a2 2 0 010 2.828l-7.793 7.793zM3 11l7.793-7.793a1 1 0 011.414 0l.586.586a1 1 0 010 1.414L5 13l-3 1 1-3z" clip-rule="evenodd"/>
 <path fill-rule="evenodd" d="M9.854 2.56a.5.5 0 00-.708 0L5.854 5.855a.5.5 0 01-.708-.708L8.44 1.854a1.5 1.5 0 012.122 0l.293.292a.5.5 0 01-.707.708l-.293-.293z" clip-rule="evenodd"/>
@@ -568,7 +591,7 @@ $('#divmyposts').append($(`
 `))
 let arrayofsteps = data[i].Method.split(",")
 let arrayofingredients = data[i].Ingredients.split(",")
-$('#divmyposts').append($(`
+$('#myposts'+data[i].id).append($(`
 <br>
 <div style="color: white;padding:5px;">
 <t style="font-family:monospace;font-size:15pt;font-weight:bold;color: white">Ingredients:</t><ul class="ulingredients${data[i].id}" style="color: white;">
@@ -578,7 +601,7 @@ for(let j=0;j<arrayofingredients.length;j++){
 $('.ulingredients'+data[i].id).append($(`<li style="font-family:monospace;font-size:12pt;color: white;">${arrayofingredients[j]} </li>`))
 }
 
-$('#divmyposts').append($(`
+$('#myposts'+data[i].id).append($(`
 <div style="color: white;padding:5px;">
 <t style="font-size:15pt;font-family:monospace;font-weight:bold;color: white;">Recipe:</t><ol class="ulmethod${data[i].id}" style="color: white;">
     </ol>
@@ -588,14 +611,15 @@ for(let j=0;j<arrayofsteps.length;j++){
 $('.ulmethod'+data[i].id).append($(`<li style="color: white;">${arrayofsteps[j]}</li>`))
 
 }
-$('#divmyposts').append($(` <br> <img src="${data[i].Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
+$('#myposts'+data[i].id).append($(` <br> <img src="${data[i].Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
 
-$('#divmyposts').append($(`<br><br>
+$('#myposts'+data[i].id).append($(`<br><br>
 <div class="commentbox${data[i].id}" style="height:200px;border:2px solid black;color: white;">
 <t style="margin-left:230px;color: white;color:white;">Comments</t>
-<ul class="comments${data[i].id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
+<ul class="comments${data[i].id}" style="height:120px;overflow:auto;list-style-type:none;padding-left:10px;color: white;">
 </ul>
-<input class="inpcomment${data[i].id}" style="width:450px;margin-left:10px;color:white;" placeholder="Write A Comment About This Dish.....">
+
+<input class="inpcomment${data[i].id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data[i].id},btn btn-success btn-xsm" onclick="Send(this)">SEND</button>
 </div>
 <br>
@@ -624,13 +648,15 @@ for(let i=0;i<list.length;i++){
  $('.comments'+list[i].Recipe).append($(`<li style="color: white;" id="${list[i].id}" onclick="showoptions(this.id)">${list[i].Sender}<img src="${list[i].ImageSender}" style="height:20px;width:20px;border-radius:50%;"></img> : ${list[i].Comment}<div id="divcomment${list[i].id}" class= "divcommentspecific" style="color:black;display:none;background-color:yellow;font-size:8pt;border: 2px solid green;width:170px;padding:2px;"><button id="btn${list[i].id}" style="background-color: red;" onclick="Removecomment(this.id)"><svg style="background-color:red;" class="bi bi-trash-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
  <path fill-rule="evenodd" d="M2.5 1a1 1 0 00-1 1v1a1 1 0 001 1H3v9a2 2 0 002 2h6a2 2 0 002-2V4h.5a1 1 0 001-1V2a1 1 0 00-1-1H10a1 1 0 00-1-1H7a1 1 0 00-1 1H2.5zm3 4a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7a.5.5 0 01.5-.5zM8 5a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7A.5.5 0 018 5zm3 .5a.5.5 0 00-1 0v7a.5.5 0 001 0v-7z" clip-rule="evenodd"/>
 </svg></button> on ${list[i].Date} at  ${list[i].Time}</div></li>`))
+
+$('.comments'+list[i].Recipe).scrollTop($('.comments'+list[i].Recipe)[0].scrollHeight);
     }
 }
 })
 
 }
 }
-}
+
 })
 
 }
@@ -845,6 +871,75 @@ function deletemypost(id){
 socket.on("notificationrecipe",(data)=>{
     $('#audio').trigger("play")
     $('#ulnotificationrecipes').prepend($(`<li><t style="color: #000000;font-weight:bolder;background-color:yellow;">${data.user}  Posted A Recipe <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
+    
+    $('#divposts').prepend($(`<div id="posts${data.details.id}"></div>`))
+
+    $('#posts'+data.details.id).append($(`
+    <div class="divname${data.details.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.details.UploaderImage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.details.id}" style="font-weight:bold;color:white;">${data.details.Uploader} </t></div>
+    <div class="divtime${data.details.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.details.Date} at ${data.details.Time}</div>
+    
+    <div class="divrecipe${data.details.id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color:white;padding:5px;">${data.details.NameOfDish}</div>
+    
+    `))
+    let arrayofsteps = data.details.Method.split(",")
+    let arrayofingredients = data.details.Ingredients.split(",")
+    $('#posts'+data.details.id).append($(`
+    <br>
+    <div style="color: white;padding:5px;">
+    <t style="font-family:monospace;font-size:15pt;font-weight:bold;color: white;">Ingredients:</t><ul class="ulingredients${data.details.id}" style="color: white;">
+    </ul>
+    
+    `))
+    for(let i=0;i<arrayofingredients.length;i++){
+    $('.ulingredients'+data.details.id).append($(`<li style="font-family:monospace;font-size:12pt;color: white;">${arrayofingredients[i]}</li>`))
+    }
+    
+    $('#posts'+data.details.id).append($(`
+    <div style="color: white;padding:5px;">   
+    <t style="font-size:15pt;font-family:monospace;font-weight:bold;color: white;">Recipe:</t><ol class="ulmethod${data.details.id}" style="color: white;">
+        </ol>
+       
+        `))
+    
+    for(let i=0;i<arrayofsteps.length;i++){
+    $('.ulmethod'+data.details.id).append($(`<li style="color:white;">${arrayofsteps[i]}</li>`))
+    
+    }
+    $('#posts'+data.details.id).append($(`<br><img src="${data.details.Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
+    
+    $('#posts'+data.details.id).append($(`
+    <br><br><div class="commentbox${data.details.id}" style="height:200px;border:2px solid black;color: white;">
+    <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
+    <ul class="comments${data.details.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
+    </ul>
+    <input class="inpcomment${data.details.id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
+    <button class="btncomment${data.details.id},btn btn-success btn-xsm" onclick="Send
+    (this)" >SEND</button>
+    </div><br>
+    <div style="height:2px;background-color:white;padding:0px;"></div><br>
+    
+    `))
+    
+    /*{{!-- socket.emit('getcomments',{recipeid: data.id})
+    socket.on('gotcomments',(data)=>{
+    $('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${data.comment}</li>`))
+    }) --}}*/
+    
+    $.post('/getcomments',{id : data.details.id},(data)=>{
+    console.log(data)
+    for(let i=0;i<data.length;i++){
+        if(data[i].Deleted){
+            continue
+        }else{
+    
+        
+        $('.comments'+data[i].Recipe).append($(`<li id="${data[i].id}" onclick="showoptions(this.id)" style="color:wh;">${data[i].Sender}<img src="${data[i].ImageSender}" style="height:20px;width:20px;border-radius:50%;"></img> : ${data[i].Comment}<div id="divcomment${data[i].id}" class= "divcommentspecific" style="color:black;display:none;background-color:yellow;font-size:8pt;border: 2px solid green;width:170px;padding:2px;"><button id="btn${data[i].id}" style="background-color: red;"  onclick="Removecomment(this.id)"><svg style="background-color:red;" class="bi bi-trash-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M2.5 1a1 1 0 00-1 1v1a1 1 0 001 1H3v9a2 2 0 002 2h6a2 2 0 002-2V4h.5a1 1 0 001-1V2a1 1 0 00-1-1H10a1 1 0 00-1-1H7a1 1 0 00-1 1H2.5zm3 4a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7a.5.5 0 01.5-.5zM8 5a.5.5 0 01.5.5v7a.5.5 0 01-1 0v-7A.5.5 0 018 5zm3 .5a.5.5 0 00-1 0v7a.5.5 0 001 0v-7z" clip-rule="evenodd"/>
+      </svg></button> on ${data[i].Date} at ${data[i].Time} </div></li>`))
+      $('.comments'+data[i].Recipe).scrollTop($('.comments'+data[i].Recipe)[0].scrollHeight);
+        }
+    }
+    })
 })
 
 
@@ -869,12 +964,18 @@ $.post("/getnotification",{user: currentuser},(data)=>{
 // myfriends
 
 function sendmessage(name){
+
+    if( $('#inpmessage'+name).val().length ==0){
+        return
+    }else{
     socket.emit("msgsend",{from: currentuser , to: name , msg: $('#inpmessage'+name).val()})
     $('#ulchats'+name).append($(`<li style="color:white;margin-left:350px;background-color:green;border-radius:25px;text-align:center;">${$('#inpmessage'+name).val()}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
     $('#inpmessage'+name).val("")
-   
+    $('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
+}
 }
 socket.on("msgreceive",(data)=>{
+  
     // alert("You receievd a Message From " + data.Sender)
     console.log(arrayoffriends)
    let index = arrayoffriends.findIndex(x => x.friend === data.Sender)
@@ -884,6 +985,8 @@ socket.on("msgreceive",(data)=>{
        $('#count'+data.Sender).hide()
        $('#audio2').trigger("play")
 
+     
+ $('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
    }else{
     
      $('#popup').empty()
@@ -902,20 +1005,28 @@ socket.on("msgreceive",(data)=>{
   msgs = parseInt(msgs) + 1
   $('#count'+data.Sender).text(`${msgs}`)
   $('#count'+data.Sender).show()
+  $('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
     //    alert("You have received a message from " + data.Sender)
    }
-    
-$('#ulchats'+data.Sender).append($(`<li style="color:white;background-color:red;margin-right:350px;border-radius:25px;text-align:center;">${data.Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
  
+$('#ulchats'+data.Sender).append($(`<li style="color:white;background-color:red;margin-right:350px;border-radius:25px;text-align:center;">${data.Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
+$('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
 
 })
 
+function sendmessage2(id){
+    if(event.key ===  "Enter"){
+        sendmessage(id.split("inpmessage")[1])
+    }
+}
 
 function showrecipes(id){
  console.log(arrayoffriends[0])
  countclick =0;
  clickcounter =0;
  clicknumber =0;
+
+ 
 
 
  console.log(onemorecounter)
@@ -965,7 +1076,7 @@ function showrecipes(id){
        console.log(arrayoffriends[index])
         
         $('#count'+name).hide()
-        
+   
         $.post('/getchat',{receiver : name , sender: currentuser},(data)=>{
             let firsttime = data[0].Date
             $('#ulchats'+name).append(`<div class="date" style="height:30px;text-align:center;font-weight:bold;color:white;background-color:black;border-radius:25px;">${firsttime}</div><br>`)
@@ -987,16 +1098,17 @@ firsttime = data[i].Date
                     $('#ulchats'+name).append($(`<li style="color:white;margin-left:350px;background-color:green;border-radius:25px;text-align:center;">${data[i].Message}<t style="font-size:8pt;margin-left: 30px;color:white;">${data[i].Time}</li><br>`))
                 }
             }
+            $('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
 
         })
         $('#divfriends').append($(`
         <div style="text-align:center;color:white;font-size:15pt;height:50px;background-color: #700e09;border-radius:30px;position:sticky;top:10px;" class="divreceiver">${name}   <img src="${srcimage}" style="height:40px;width:40px;border-radius:50%;margin-top:5px;"></img><br></div>
         <br><div style="height:575px;color:white">
-        <ul id="ulchats${name}" style="height:500px;overflow-y:scroll;">
+        <ul id="ulchats${name}" style="height:500px;overflow:auto;padding:0px;" class="ulchats">
         </ul>
         </div>
         <div style="position:sticky;bottom:10px;">
-<input placeholder="Write a Message...." id="inpmessage${name}" style="width:400px;margin-left:50px;color:white;background-color:black;border-radius: 30px;"></input>
+<input placeholder="Write a Message...." id="inpmessage${name}"  onkeypress="sendmessage2(this.id)"  style="width:400px;margin-left:50px;color:white;background-color:black;border-radius: 30px;"></input>
 <button class="btn btn-danger btn-xsm" class="btnsend" id="${name}" onclick="sendmessage(this.id)" style="margin-bottom:10px;">Send</button>
 
         </div>

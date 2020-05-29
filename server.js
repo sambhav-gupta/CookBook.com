@@ -210,7 +210,7 @@ io.on('connection',(socket)=>{
             socket.emit('foundrecipe',recipe.dataValues)
         })
     })
-   
+
     socket.on('commentsend',(data)=>{
         Comments.create({
            Recipe : data.recipeid,
@@ -224,6 +224,7 @@ io.on('connection',(socket)=>{
 
         }).then((comment)=>{
 
+           
             socket.broadcast.emit('commentreceive',comment)
             
         })
@@ -420,11 +421,14 @@ var storagerecipe = multer.diskStorage({
                 Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
                 Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),
                 UploaderImage: req.body.uploaderimage
+           }).then((created)=>{
+            res.send(created)
+
            })
            
 
                console.log("Uploaded Successfully")
-               res.send("uploaded")
+              
                   
                 }
             }

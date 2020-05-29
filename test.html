@@ -7,21 +7,29 @@
     <script src="http://code.jquery.com/jquery-3.4.1.js"></script>
 </head>
 <body>
-  
-  <button id="btn">Click</button>
 
-
+<ul id="myul" style="overflow:auto;height: 100px;" >
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>One</li>
+<li>Two</li>
+<li>Two</li>
+<li>Two</li>
+<li>Two</li>
+<li>Two</li>
+<li>Two</li>
+<li>Three</li>
+</ul>
+<button id="btn">Button</button>
    <script>
-     function set(){
-      let time =   setInterval(() => {
-        alert("test")
-      }, 5000);
-     }
      $('#btn').click(()=>{
-   set()
-     
+      $('#myul').scrollTop($('#myul')[0].scrollHeight);
      })
-     clearInterval(time)
    </script>
 </body>
 </html>
