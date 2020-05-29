@@ -2,7 +2,7 @@ const express = require('express')
 const session = require('express-session')
 const http = require('http')
 const path = require('path')
-const {db,Users , Recipes ,Friendlist , Comments,Favourites , NotificationsRecipes,NotificationsComments,NotificationsFriends,Chats} = require('./database')
+const {db,Users , Recipes ,Friendlist , Comments, NotificationsRecipes,NotificationsFriends,Chats} = require('./database')
 const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
@@ -177,7 +177,7 @@ io.on('connection',(socket)=>{
     })
 
     socket.on('getrecipesoffriends',(data)=>{
-       
+       console.log(data)
      for(let i=0;i<data.length;i++){
         let recipes = []
         Recipes.findAndCountAll({
@@ -459,7 +459,7 @@ app.post('/addfriend',(req,res)=>{
 
             })
 io.to(req.body.friendname).emit("notifyfriend",{sender: req.body.username , msg: "Added You as a friend" ,image:req.body.image})
-            res.send("Added")
+            res.send(user.Dp)
         }else{
             res.send("Failed")
         }
@@ -565,10 +565,10 @@ var storagerecipeedit = multer.diskStorage({
                          Deleted : false,
                          Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
                     },{where : { id: req.body.id}})
-                    res.send("updated without image")
+                    res.send("Updated Successfully")
                     return
                 }else{
-                  
+                  console.log(req.body.steps)
            Recipes.update({
                Uploader: req.body.username,
                NameOfDish : req.body.nameofdish,
@@ -580,7 +580,7 @@ var storagerecipeedit = multer.diskStorage({
                 Deleted : false,
                 Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
            },{where : { id: req.body.id}})
-           res.send("updated with image")
+           res.send("Updated Successfully")
                console.log("Uploaded Successfully")
                   
                 }
@@ -666,6 +666,18 @@ app.post('/getchat',(req,res)=>{
 
     })
 })
+
+app.post('/deletefriend',(req,res)=>{
+    Friendlist.destroy({
+        where:{
+            Username: req.body.user,
+            Friendname: req.body.friend
+        }
+    })
+    res.send("Deleted")
+})
+
+
 db.sync().then(()=>{console.log("Database Created")})
 server.listen(6789,()=>{
     console.log("Server at http://localhost:6789")

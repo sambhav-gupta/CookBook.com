@@ -84,6 +84,7 @@ if($('#inpfriendusername').val().length==0){
 return
 }else if(friendlist.indexOf($('#inpfriendusername').val())!=-1){
 alert($('#inpfriendusername').val() + " is already your friend")
+  $('#inpfriendusername').val("")
 }
 else{
 $.post('/addfriend',{
@@ -91,17 +92,31 @@ username : currentuser,
 friendname : $('#inpfriendusername').val(),
 image: imgusersrc
 },(data)=>{
-if(data == "Added"){
+     if(data=="Failed"){
+        alert("No such User Exists")
+         $('#inpfriendusername').val("")
+        return
+    }
+else{
+    console.log(data)
+
     friendlist.push($('#inpfriendusername').val())
-    
+    $('#divfriendlist').append($(`
+    <div id="${$('#inpfriendusername').val()},${data}" style="text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${$('#inpfriendusername').val()} <img src="${data}" style="height:20px;width:20px;border-radius:50%"><img>
+    <span style="height:10px;background-color:red;font-size:12pt;display:none;font-weight:bold;" id="count${$('#inpfriendusername').val()}">0</span>
+    <button id="btn${$('#inpfriendusername').val()},${data}" onclick="Delete(this.id)" class="btn btn-danger btn-xsm" style="height:25px;width:25px;border-radius:50%;"><svg style="transform: translate(-11px,-6px)" class="bi bi-x" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+    <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+  </svg></button>
+    </div>
+    `))
     alert("Added Friend " + $('#inpfriendusername').val())
+   let dataa = [$('#inpfriendusername').val()]
+    socket.emit('getrecipesoffriends',dataa)
+    
     $('#inpfriendusername').val("")
     
 
-    return
-}else if(data=="Failed"){
-    alert("No such User Exists")
-     $('#inpfriendusername').val("")
     return
 }
 
@@ -139,6 +154,7 @@ console.log("test " +  clicknumber)
         $('#divmyposts').hide()
         $('#diveditrecipe').hide()
         $('#divfriends').hide()
+        $('#divfriends').empty()
     }else{
         $('#addnewrecipe').css("background-color", "green")
         $('#myrecipes').css("background-color","transparent")
@@ -147,6 +163,7 @@ console.log("test " +  clicknumber)
         $('#diveditrecipe').hide()
         counterr = 0
         $('#divfriends').hide()
+        $('#divfriends').empty()
         $('#divposts').hide()
         $('#divmyposts').hide()
         $('#divaddnewrecipe').show()
@@ -260,10 +277,10 @@ let type = $("input:checked").val()
 let uploaderimage = $('#imguser').attr("src")
 var formData = new FormData(this)
 $('#ulingredients li').each(function(index){
-ingredients.push($(this).text())
+ingredients.push($(this).text().trim())
 })
 $('#olsteps li').each(function(index){
-steps.push($(this).text().split("updown")[0])
+steps.push($(this).text().split("updown")[0].trim())
 })
 if(ingredients.length ==0 || ingredients.length == 1){
 alert("There should be atleast 2 ingredients")
@@ -355,9 +372,11 @@ $('#divposts').prepend($(`<div id="posts${data.id}"></div>`))
 
 $('#posts'+data.id).append($(`
 <div class="divname${data.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.UploaderImage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.id}" style="font-weight:bold;color:white;">${data.Uploader} </t></div>
+
 <div class="divtime${data.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.Date} at ${data.Time}</div>
 
 <div class="divrecipe${data.id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color:white;padding:5px;">${data.NameOfDish}</div>
+<div class="divcuisine${data.id}" style="font-size:10pt;font-family: monospace;color:white;padding:5px;">${data.Cuisine}(${data.Type})</div>
 
 `))
 let arrayofsteps = data.Method.split(",")
@@ -391,7 +410,7 @@ $('#posts'+data.id).append($(`
 <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
 <ul class="comments${data.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
 </ul>
-<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
+<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;color:black;text-align:center;" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data.id},btn btn-success btn-xsm" onclick="Send
 (this)" >SEND</button>
 </div><br>
@@ -551,12 +570,14 @@ $('#divmyposts').hide()
 $('#divaddnewrecipe').hide()
 $('#divfriends').empty()
 $('#divfriends').hide()
+
 $('#myrecipes').css("background-color","transparent")
  $('#divposts').show()
  
 }else{
     $('#divfriends').empty()
     $('#divfriends').hide()
+ 
   console.log("clicked")
   $('#myrecipes').css("background-color","green")
   $('#diveditrecipe').hide()
@@ -588,6 +609,8 @@ $('#myposts'+data[i].id).append($(`
 </div>
 <div class="divtime${data[i].id}" style="font-size:12pt;font-family: monospace;color: white;padding:5px;">${data[i].Date} at ${data[i].Time}</div>
     <div class="divrecipe${data[i].id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color: white;padding:5px;">${data[i].NameOfDish}</div>
+    <div class="divcuisine${data[i].id}" style="font-size:10pt;font-family: monospace;font-weight:bolder;color: white;padding:5px;">${data[i].Cuisine}(${data[i].Type})</div>
+
 `))
 let arrayofsteps = data[i].Method.split(",")
 let arrayofingredients = data[i].Ingredients.split(",")
@@ -619,7 +642,7 @@ $('#myposts'+data[i].id).append($(`<br><br>
 <ul class="comments${data[i].id}" style="height:120px;overflow:auto;list-style-type:none;padding-left:10px;color: white;">
 </ul>
 
-<input class="inpcomment${data[i].id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
+<input class="inpcomment${data[i].id}" style="width:450px;margin-left:10px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data[i].id},btn btn-success btn-xsm" onclick="Send(this)">SEND</button>
 </div>
 <br>
@@ -794,10 +817,11 @@ function edit(id){
                     let type = $("input:checked").val()
                     var formData = new FormData(this)
                     $('#ulingredientsedit li').each(function(index){
-                    ingredients.push($(this).text())
+                    ingredients.push($(this).text().trim())
                     })
+                    
                     $('#olstepsedit li').each(function(index){
-                    steps.push($(this).text().split("updown")[0])
+                    steps.push($(this).text().split("updown")[0].trim())
                     })
                     if(ingredients.length ==0 || ingredients.length == 1){
                     alert("There should be atleast 2 ingredients")
@@ -831,6 +855,7 @@ function edit(id){
                     data: formData,
                     success: function(data){
                     alert(data)
+                    window.location.replace('/content')
                     
                     },
                     catch: false,
@@ -912,7 +937,7 @@ socket.on("notificationrecipe",(data)=>{
     <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
     <ul class="comments${data.details.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
     </ul>
-    <input class="inpcomment${data.details.id}" style="width:450px;margin-left:10px;color:black;" placeholder="Write A Comment About This Dish.....">
+    <input class="inpcomment${data.details.id}" style="width:450px;margin-left:10px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
     <button class="btncomment${data.details.id},btn btn-success btn-xsm" onclick="Send
     (this)" >SEND</button>
     </div><br>
@@ -968,10 +993,12 @@ function sendmessage(name){
     if( $('#inpmessage'+name).val().length ==0){
         return
     }else{
+
     socket.emit("msgsend",{from: currentuser , to: name , msg: $('#inpmessage'+name).val()})
     $('#ulchats'+name).append($(`<li style="color:white;margin-left:350px;background-color:green;border-radius:25px;text-align:center;">${$('#inpmessage'+name).val()}<t style="font-size:8pt;margin-left: 30px;color:white;">${new Date().getHours() + ':' + new Date().getMinutes()}</li><br>`))
     $('#inpmessage'+name).val("")
     $('.ulchats').scrollTop($('.ulchats')[0].scrollHeight);
+    $('#audio3').trigger("play")
 }
 }
 socket.on("msgreceive",(data)=>{
@@ -1056,6 +1083,7 @@ function showrecipes(id){
         $('#divmyposts').hide()
         $('#divposts').hide()
         $('#divfriends').show()
+        $('#divfriends').empty()
         $('#myrecipes').css("background-color","transparent")
         $('#addnewrecipe').css("background-color","transparent")
     
@@ -1103,13 +1131,16 @@ firsttime = data[i].Date
         })
         $('#divfriends').append($(`
         <div style="text-align:center;color:white;font-size:15pt;height:50px;background-color: #700e09;border-radius:30px;position:sticky;top:10px;" class="divreceiver">${name}   <img src="${srcimage}" style="height:40px;width:40px;border-radius:50%;margin-top:5px;"></img><br></div>
-        <br><div style="height:575px;color:white">
+        <br>
+        
         <ul id="ulchats${name}" style="height:500px;overflow:auto;padding:0px;" class="ulchats">
         </ul>
-        </div>
-        <div style="position:sticky;bottom:10px;">
-<input placeholder="Write a Message...." id="inpmessage${name}"  onkeypress="sendmessage2(this.id)"  style="width:400px;margin-left:50px;color:white;background-color:black;border-radius: 30px;"></input>
-<button class="btn btn-danger btn-xsm" class="btnsend" id="${name}" onclick="sendmessage(this.id)" style="margin-bottom:10px;">Send</button>
+        
+        <div>
+<input placeholder="Write a Message...." id="inpmessage${name}"  onkeypress="sendmessage2(this.id)"  style="width:450px;margin-left:50px;color:white;background-color:black;border-radius: 30px;text-align:center"></input>
+<button class="btn btn-danger btn-xsm" class="btnsend" id="${name}" onclick="sendmessage(this.id)" style="border-radius:50%;height:40px;width:40px;" ><svg class="bi bi-arrow-right-circle-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-8.354 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L9.793 7.5H5a.5.5 0 0 0 0 1h4.793l-2.147 2.146z"/>
+</svg></button>
 
         </div>
         `))
@@ -1123,7 +1154,22 @@ firsttime = data[i].Date
 
 
 
+function Delete(id){
+    let divid = id.split("btn")[1].trim()
+    console.log(divid)
+    let name = id.split(",")[0]
+    name = name.split("btn")[1]
+    let ans = confirm("You Want to remove " + name + " from your Friendlist ??")
+    if(ans){
+        $.post('/deletefriend',{user: currentuser , friend: name},(data)=>{
+           window.location.replace('/content')
+           
+        })
+        alert("Removed " + name + " from Your Friendlist")
+    }
 
+    
+}
 
 $.post('/getfriends',{user : currentuser},(data)=>{
        
@@ -1136,6 +1182,10 @@ $.post('/getfriends',{user : currentuser},(data)=>{
     $('#divfriendlist').append($(`
     <div id="${data[i].Friendname},${data[i].Image}" style="text-align:center;font-size:15pt;border-bottom:1px solid black;" onclick="showrecipes(this.id)">  ${data[i].Friendname} <img src="${data[i].Image}" style="height:20px;width:20px;border-radius:50%"><img>
     <span style="height:10px;background-color:red;font-size:12pt;display:none;font-weight:bold;" id="count${data[i].Friendname}">0</span>
+    <button id="btn${data[i].Friendname},${data[i].Image}" onclick="Delete(this.id)" class="btn btn-danger btn-xsm" style="height:25px;width:25px;border-radius:50%;"><svg style="transform: translate(-11px,-6px)" class="bi bi-x" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+    <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+  </svg></button>
   </div>
     `))
     }
@@ -1158,6 +1208,7 @@ countclick = 0;
         
           
         $('#divfriendlist').hide()
+        $('#divfriends').empty()
         $('#divfriends').hide()
         $('#divposts').show()
         $('#myfriends').css("background-color","transparent")
