@@ -45,11 +45,11 @@ const Recipes = db.define('recipe',{
         allownull: false
     },
     Ingredients:{
-        type: Seqeulize.STRING,
+        type: Seqeulize.TEXT,
         allownull: false
     },
     Method:{
-        type: Seqeulize.STRING,
+        type: Seqeulize.TEXT('long'),
         allownull: false
     },
     Image:{

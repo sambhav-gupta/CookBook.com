@@ -1,3 +1,10 @@
+$('#btnsignup').click(()=>{
+    location.href = "/signup";
+})
+$('#btnhome').click(()=>{
+    location.href = "/";
+})
+
 $('#btnsignin').click(()=>{
     $.post('/signin',{
         username: $('#inpusername').val(),

@@ -1,5 +1,14 @@
 
+$('#btnhome').click(()=>{
+    location.href = "/";
+})
+$('#btnsignin').click(()=>{
+    location.href = "/signin";
+})
+
 //show selected profile picture on screen//
+
+
 $('#btnupload').click(()=>{
     if($('#inpprofilephoto').prop('files').length ==0){
         alert("No Profile Photo Selected")
@@ -31,12 +40,28 @@ $('#frmsignup').submit(function(e){
             data: formData,
             
             success: function (data) {
-                alert(data)
+               
                 
+                
+                  if(data == "User " + $('#inpusername').val() + " Already Exists . Please login!!"){
+                    alert("User " + $('#inpusername').val() + " Already Exists . Please login!!")
+                    $('#inpusername').val("") 
+                    return
+                  
+                  }else if(data == "Signed up "+  $('#inpusername').val() +" succesfully"){
+                        alert("Signed up "+  $('#inpusername').val() +" succesfully")
                 $.post('/content',{username : $('#inpusername').val()},(data)=>{
                   
                     window.location.replace('/content')
+                   
                 })
+                return
+                  }else if(data == "No file Selected"){
+                      alert("No Profile Photo Selected")
+                      return
+
+                  }
+                
                
                 
                 

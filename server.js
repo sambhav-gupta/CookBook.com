@@ -20,7 +20,7 @@ var storage = multer.diskStorage({
     filename: (req,file,cb)=>{
        
         
-            cb(null,file.fieldname + '-' + req.body.uname + path.extname(file.originalname) )
+            cb(null,file.fieldname + '-' + req.body.uname + '-' +  Date.now() + path.extname(file.originalname) )
         
       
     }
@@ -47,6 +47,7 @@ var storage = multer.diskStorage({
     }
     app.use(express.static('./views'))
     app.use(express.static('./audios'))
+    app.use(express.static('./Screenshots'))
 
     // adding user details to database on signup
     app.post('/signup',(req,res)=>{
@@ -160,6 +161,10 @@ io.on('connection',(socket)=>{
         socket.join(data.username)
         
     })
+
+    socket.on('logout',(data)=>{
+        io.to(data.user).emit("loggedout")
+    })
     socket.on('getfriends',(data)=>{
 
 
@@ -228,18 +233,7 @@ io.on('connection',(socket)=>{
             socket.broadcast.emit('commentreceive',comment)
             
         })
-        NotificationsComments.create({
-            Sender: data.sender,
-            Notification: "Commented on Your Recipe " + data.recipename,
-            Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
-            Time: new Date().getHours() + ':' + new Date().getMinutes(),
-            SenderImage: data.senderimage,
-            Receiver: data.owner
-        }).then((created)=>{
-            io.to(data.owner).emit("notificationcomment",{sender: data.sender , image:data.senderimage , msg:"Commented On Your Recipe "+data.recipename})
-           console.log("created comment")
-          
-        })
+       
        
     })
 
@@ -400,22 +394,22 @@ var storagerecipe = multer.diskStorage({
         uploadrecipe(req,res,(err)=>{
             if(err){
                 console.log("Error in server")
-                console.log(err)
-               res.send(err)
+              res.send(err)
                 return
             }else {
                 if(req.file == undefined){
                     res.send("No file Selected")
                     return
                 }else{
-                  
+
+                  console.log(req.body.steps.toString().trim())
            Recipes.create({
                Uploader: req.body.username,
                NameOfDish : req.body.nameofdish,
                Type: req.body.type,
                 Image: req.file.filename,
-                Ingredients : req.body.ingredients.toString(),
-                Method : req.body.steps.toString(),
+                Ingredients : req.body.ingredients.toString().trim(),
+                Method : req.body.steps.toString().trim(),
                 Cuisine : req.body.cuisine,
                 Deleted : false,
                 Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
@@ -424,6 +418,8 @@ var storagerecipe = multer.diskStorage({
            }).then((created)=>{
             res.send(created)
 
+           }).catch((err)=>{
+               res.send("limit")
            })
            
 
@@ -559,8 +555,8 @@ var storagerecipeedit = multer.diskStorage({
                         Uploader: req.body.username,
                         NameOfDish : req.body.nameofdish,
                         Type: req.body.type,
-                         Ingredients : req.body.ingredients.toString(),
-                         Method : req.body.steps.toString(),
+                         Ingredients : req.body.ingredients.toString().trim(),
+                         Method : req.body.steps.toString().trim(),
                          Cuisine : req.body.cuisine,
                          Deleted : false,
                          Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()

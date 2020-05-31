@@ -29,6 +29,9 @@
        
          border-bottom: 2px solid black;
      }
+     #searcheduser::-webkit-scrollbar{
+         display: none;
+     }
      #myrecipes:hover{
          background-color: #01535c;
         
@@ -38,11 +41,11 @@
         
      }
        #divfriendlist div{
-         background-color: green;
+         background-color:  #990033;
         
      }
        #divfriendlist div:hover{
-         background-color: #aaf23d;
+         background-color: #ff0055;
         
      }
       #btnlogout:hover{
@@ -55,7 +58,9 @@
      .ulchats::-webkit-scrollbar{
          display: none;
      }
-    
+    #divfriendlist::-webkit-scrollbar{
+        display: none;
+    }
 </style>
 <body>
     <audio id="audio" src="swiftly.mp3" style="display: none;"></audio>
@@ -65,7 +70,7 @@
     
 
    <div id="divheading" style=" height: 100px;color:white;font-size: 25pt;font-weight: bold;font-family: sans-serif;border-bottom: 1px solid black;background-image: url('wallpaper6.jpg');background-size: 300px 99px;">
-  <br>     <t style="margin-left:310px;font-family: Courier New">Welcome To MyRecipeBook.com !</t>
+  <br>     <t style="margin-left:350px;font-family: Courier New">Welcome To CookBook.com !</t>
   
        </div>
 
@@ -79,7 +84,7 @@
         <img id="imguser" src="{{userinfo.image}}" style="height: 40px;width: 40px;border-radius: 50%;">
     </div>
     <!-- {{!-- add new recipe --}} -->
-    <div id="addnewrecipe" style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;color:white">
+    <div id="addnewrecipe" data-toggle="tooltip" data-placement="top" title="Click to Add a new Recipe"  style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;color:white">
      Add New Recipe &nbsp;<button id="btnaddnewrecipe"class="btn btn-info btn-sm" ><svg style="background-color: transparent;" class="bi bi-plus" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"/>
             <path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"/>
@@ -92,22 +97,22 @@
             <div class="input-group-prepend">
               <span class="input-group-text" id="addon-wrapping">@</span>
             </div>
-            <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="addon-wrapping" id="inpfriendusername">
+            <input type="text" class="form-control" placeholder="Friend's Username" aria-label="Username" aria-describedby="addon-wrapping" id="inpfriendusername">
             <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="button" id="btnaddnewfriend"><svg style="background-color: transparent;" class="bi bi-person-plus-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <button class="btn btn-outline-secondary" type="button" data-toggle="tooltip" data-placement="top" title="Click to Add Friend" id="btnaddnewfriend"><svg style="background-color: transparent;" class="bi bi-person-plus-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 100-6 3 3 0 000 6zm7.5-3a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 010-1H13V5.5a.5.5 0 01.5-.5z" clip-rule="evenodd"/>
                     <path fill-rule="evenodd" d="M13 7.5a.5.5 0 01.5-.5h2a.5.5 0 010 1H14v1.5a.5.5 0 01-1 0v-2z" clip-rule="evenodd"/>
                   </svg></button>
               </div>
           </div>
   
-    <div id="searcheduser" style="overflow-y: scroll;max-height:100px; ">
+    <div id="searcheduser" style="overfloy: auto;max-height:100px; ">
        
         
     </div>
 </div>
 <!-- {{!-- My friends --}} -->
-<div id="myfriends" onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;font-family:monospace;padding: 10px;font-size: 15pt;text-align: center;color:white">My Friends&nbsp;<svg class="bi bi-people-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+<div id="myfriends"  data-toggle="tooltip" data-placement="top" title="Click to View Friendlist"  onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;font-family:monospace;padding: 10px;font-size: 15pt;text-align: center;color:white">My Friends&nbsp;<svg class="bi bi-people-fill" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 100-6 3 3 0 000 6zm-5.784 6A2.238 2.238 0 015 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 005 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd"/>
   </svg>
 
@@ -115,14 +120,14 @@
 <div style="max-height: 400px;background-color: white;display:none;overflow:auto;" id="divfriendlist" ></div>
 
 <!-- {{!-- My recipes --}} -->
-<div id="myrecipes" onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;color:white">
+<div id="myrecipes" data-toggle="tooltip" data-placement="top" title="Click to View Your Recipes" onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;text-align: center;font-family: monospace;font-size: 15pt;padding: 10px;color:white">
 My Recipes&nbsp;<svg class="bi bi-book" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" d="M3.214 1.072C4.813.752 6.916.71 8.354 2.146A.5.5 0 018.5 2.5v11a.5.5 0 01-.854.354c-.843-.844-2.115-1.059-3.47-.92-1.344.14-2.66.617-3.452 1.013A.5.5 0 010 13.5v-11a.5.5 0 01.276-.447L.5 2.5l-.224-.447.002-.001.004-.002.013-.006a5.017 5.017 0 01.22-.103 12.958 12.958 0 012.7-.869zM1 2.82v9.908c.846-.343 1.944-.672 3.074-.788 1.143-.118 2.387-.023 3.426.56V2.718c-1.063-.929-2.631-.956-4.09-.664A11.958 11.958 0 001 2.82z" clip-rule="evenodd"/>
     <path fill-rule="evenodd" d="M12.786 1.072C11.188.752 9.084.71 7.646 2.146A.5.5 0 007.5 2.5v11a.5.5 0 00.854.354c.843-.844 2.115-1.059 3.47-.92 1.344.14 2.66.617 3.452 1.013A.5.5 0 0016 13.5v-11a.5.5 0 00-.276-.447L15.5 2.5l.224-.447-.002-.001-.004-.002-.013-.006-.047-.023a12.582 12.582 0 00-.799-.34 12.96 12.96 0 00-2.073-.609zM15 2.82v9.908c-.846-.343-1.944-.672-3.074-.788-1.143-.118-2.387-.023-3.426.56V2.718c1.063-.929 2.631-.956 4.09-.664A11.956 11.956 0 0115 2.82z" clip-rule="evenodd"/>
   </svg>
 </div>
 <!-- {{!-- Logout --}} -->
-<div id="btnlogout" onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;font-size: 15pt;font-family: monospace;text-align: center;padding: 10px;color:white">
+<div id="btnlogout" data-toggle="tooltip" data-placement="top" title="Click to Logout" onmouseover="hoverthis(this.id)" onmouseout="donthoverthis(this.id)" style="border-bottom: 2px solid black;font-size: 15pt;font-family: monospace;text-align: center;padding: 10px;color:white">
 Logout&nbsp;
   
 </div>
@@ -136,7 +141,7 @@ Logout&nbsp;
     <div id="divposts" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;padding:10px;background-image: url('wallpaper3.jpg');background-size: 800px ;">
     </div>
        <!-- div to add new recipe -->
-  <div id="divaddnewrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow-y: scroll;background-image:url('wallpaper10.jpg');">
+  <div id="divaddnewrecipe" style="display:none;width: 600px;border-right: 2px solid black;height: 666px;padding-top: 10px ;overflow:auto;background-image:url('wallpaper10.jpg');">
     <form method="POST" enctype="multipart/form-data" id="frmaddrecipe" class="form-inline">
         &nbsp;&nbsp;
        <input class="form-control" placeholder="Name Of The Dish" id="inpnameofdish" style="width: 200px;" name="nameofdish"> &nbsp;&nbsp;&nbsp;
@@ -154,13 +159,13 @@ Logout&nbsp;
         <option selected >Lt</option>
         <option>gm</option>
         <option>kg</option>
-        <option>teaspoon</option>
-        <option>Peices</option>
+        <option>tsp</option>
+        <option>Pcs</option>
         <option>ml</option>
-        <option>tablespoon</option>
+        <option>tbsp</option>
         <option>cup</option>
         <option>pint</option>
-        <option>quart</option>
+        <option>qrt</option>
         <option>mg</option>
         <option>mm</option>
         <option>cm</option>
@@ -169,13 +174,21 @@ Logout&nbsp;
         <option>dozen</option>
 
     </select>
+    
     <button class="btn btn-info" id="btnaddtolist" style="margin-left: 10px;margin-top: 10px;" type="button" >Add</button>
-     <ul id="ulingredients" style="height: 100px;width: 550px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color:white;">
+     <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 Ingredients required(Max Characters of all the ingredients should be 240(including spaces))</label>
+     <ul id="ulingredients" style="height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color: yellow">
 
      </ul>
-    <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethod" style="margin-top: 5px;margin-left: 10px;width: 550px;">
-  
-    <ol id="olsteps" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:white;"></ol><br>
+      <div id="calculate1" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt">0</div>
+ 
+    
+    <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethod" style="margin-top: 5px;margin-left: 10px;width: 500px;">
+  <div id="calculate" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
+  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 steps required(Max Characters of all the steps should be 240(including spaces))</label>
+ 
+    <ol id="olsteps" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:yellow;"></ol><br>
+    
 
     <div class="input-group mb-3" style="margin-left: 10px;">
         <div class="custom-file">
@@ -238,13 +251,13 @@ Logout&nbsp;
         <option selected >Lt</option>
         <option>gm</option>
         <option>kg</option>
-        <option>teaspoon</option>
-        <option>Peices</option>
+        <option>tsp</option>
+        <option>Pcs</option>
         <option>ml</option>
-        <option>tablespoon</option>
+        <option>tbsp</option>
         <option>cup</option>
         <option>pint</option>
-        <option>quart</option>
+        <option>qrt</option>
         <option>mg</option>
         <option>mm</option>
         <option>cm</option>
@@ -254,17 +267,20 @@ Logout&nbsp;
 
     </select>
     <button class="btn btn-info" id="btnaddtolistedit" style="margin-left: 10px;margin-top: 10px;" type="button" >Add</button>
-     <ul id="ulingredientsedit" style="height: 100px;width: 550px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color:white;">
+    <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 Ingredients required(Max Characters of all the ingredients should be 240(including spaces))</label>
+     <ul id="ulingredientsedit" style="height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color:yellow;">
 
      </ul>
-    <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethodedit" style="margin-top: 5px;margin-left: 10px;width: 550px;">
-  
-    <ol id="olstepsedit" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:white"></ol><br>
+      <div id="calculate2" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
+    <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethodedit" style="margin-top: 5px;margin-left: 10px;width: 500px;">
+  <div id="calculate3" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
+  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 steps required(Max Characters of all the steps should be 240(including spaces))</label>
+    <ol id="olstepsedit" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:yellow"></ol><br>
 
     <div class="input-group mb-3" style="margin-left: 10px;">
         <div class="custom-file">
 
-          <input type="file" name="recipeimage" class="custom-file-input" id="inprecipeimageedit" accept=".jpg,.png,.jpeg" style="width: 400px;">
+          <input type="file" name="recipeimage" class="custom-file-input" id="inprecipeimageedit" accept=".jpg,.png,.jpeg" style="width: 380px;">
           <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">Upload An Image</label>
         </div>
         <div class="input-group-append">
