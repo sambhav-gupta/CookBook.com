@@ -8,8 +8,9 @@ $('#btnsignin').click(()=>{
 
 //show selected profile picture on screen//
 
-
+let counter = 0
 $('#btnupload').click(()=>{
+   
     if($('#inpprofilephoto').prop('files').length ==0){
         alert("No Profile Photo Selected")
         return
@@ -17,10 +18,11 @@ $('#btnupload').click(()=>{
         let photo = $('#inpprofilephoto')[0].files[0]
         const source = URL.createObjectURL(photo);
         $('#showprofilephoto').append($(`
-        <img src="${source}" class="img-fluid" alt="Responsive image"></img><br>
-        <button onclick="remove()">Change</button>
+        <img src="${source}" class="img-fluid" alt="Responsive image"></img><br><br>
+        <button onclick="remove()" class="btn btn-light btn-xsm">Remove</button>
         `))
     }
+    $('#btnupload').attr('disabled',"true")
 
 
 })
@@ -28,6 +30,7 @@ $('#btnupload').click(()=>{
 function remove(){
     $('#showprofilephoto').empty()
     $('#inpprofilephoto').val("")
+    $('#btnupload').removeAttr('disabled')
 }
 // submit the form to signup //
 $('#frmsignup').submit(function(e){
