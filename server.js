@@ -9,6 +9,7 @@ const server = http.createServer(app)
 const io = socketio(server)
 const multer = require('multer')
 
+const SERVER_PORT =  process.env.PORT || 6789
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
@@ -675,7 +676,7 @@ app.post('/deletefriend',(req,res)=>{
 
 
 db.sync().then(()=>{console.log("Database Created")})
-server.listen(6789,()=>{
+server.listen(SERVER_PORT,()=>{
     console.log("Server at http://localhost:6789")
 })
 
