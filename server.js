@@ -32,14 +32,14 @@ const {Client} = require('pg')
 //   });
   
   
-// const client = new Client({
-//     user: 'sambhavgupta',
-//     host: 'localhost',
-//     database: 'cookbook',
-//     password: '9844',
-//     port: 5432,
-//   })
-//   client.connect()
+const client = new Client({
+    user: 'sambhavgupta',
+    host: 'localhost',
+    database: 'cookbook',
+    password: '9844',
+    port: 5432,
+  })
+  client.connect()
 
 
 const SERVER_PORT =  process.env.PORT || 6789
