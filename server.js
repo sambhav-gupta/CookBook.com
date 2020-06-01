@@ -10,16 +10,27 @@ const io = socketio(server)
 const multer = require('multer')
 const {Client} = require('pg')
 
+const { Client } = require('pg');
+
 const client = new Client({
-    user: 'ufbhmrcbhqdhxk',
-    host: 'ec2-52-71-231-180.compute-1.amazonaws.com',
-    database: 'dfm2k4qosu7npc',
-    password: '78f78719f295b299f3a5fff3a0e76b0c0240d28eed47b1d5db991ef324ea2883',
-    port: 5432,
-  })
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+client.connect();
+
+client.query('SELECT table_schema,table_name FROM information_schema.tables;', (err, res) => {
+  if (err) throw err;
+  for (let row of res.rows) {
+    console.log(JSON.stringify(row));
+  }
+  client.end();
+});
 
   
-client.connect()
+
 
 const SERVER_PORT =  process.env.PORT || 6789
 app.use(express.json())
