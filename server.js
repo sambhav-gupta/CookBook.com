@@ -10,7 +10,7 @@ const io = socketio(server)
 const multer = require('multer')
 const {Client} = require('pg')
 
-const { Client } = require('pg');
+
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
