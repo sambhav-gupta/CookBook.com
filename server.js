@@ -1,4 +1,4 @@
-require('dotenv').config()
+
 const express = require('express')
 const session = require('express-session')
 const http = require('http')
@@ -12,6 +12,13 @@ const multer = require('multer')
 const {Client} = require('pg')
 
 
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 // const client = new Client({
 //   connectionString: process.env.DATABASE_URL,
@@ -32,14 +39,14 @@ const {Client} = require('pg')
 //   });
   
   
-const client = new Client({
-    user: 'sambhavgupta',
-    host: 'localhost',
-    database: 'cookbook',
-    password: '9844',
-    port: 5432,
-  })
-  client.connect()
+// const client = new Client({
+//     user: 'sambhavgupta',
+//     host: 'localhost',
+//     database: 'cookbook',
+//     password: '9844',
+//     port: 5432,
+//   })
+//   client.connect()
 
 
 const SERVER_PORT =  process.env.PORT || 6789
@@ -134,6 +141,18 @@ app.use( session({
 app.set('view engine','hbs')
 app.set('views',__dirname + '/views')
 app.use('/',express.static(path.join(__dirname,'./public')))
+app.get('/db', async (req, res) => {
+    try {
+      const client = await pool.connect();
+      const result = await client.query('SELECT * FROM test_table');
+      const results = { 'results': (result) ? result.rows : null};
+      res.render('pages/db', results );
+      client.release();
+    } catch (err) {
+      console.error(err);
+      res.send("Error " + err);
+    }
+  })
 
 app.use('/signup',express.static(path.join(__dirname,'./public/signup.html')))
 
