@@ -12,7 +12,7 @@ const multer = require('multer')
 const {Client} = require('pg')
 
 
-const { Pool } = require('pg');
+const { Pool , Client } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -144,7 +144,7 @@ app.use('/',express.static(path.join(__dirname,'./public')))
 app.get('/db', async (req, res) => {
     try {
       const client = await pool.connect();
-      const result = await client.query('SELECT * FROM test_table');
+      const result = await client.query('SELECT * FROM users');
       const results = { 'results': (result) ? result.rows : null};
       res.send(results );
       client.release();
