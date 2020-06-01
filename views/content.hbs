@@ -61,6 +61,12 @@
     #divfriendlist::-webkit-scrollbar{
         display: none;
     }
+    #ulingredients::-webkit-scrollbar{
+        display: none;
+    }
+     #ulingredientsedit::-webkit-scrollbar{
+        display: none;
+    }
 </style>
 <body>
     <audio id="audio" src="swiftly.mp3" style="display: none;"></audio>
@@ -176,16 +182,16 @@ Logout&nbsp;
     </select>
     
     <button class="btn btn-info" id="btnaddtolist" style="margin-left: 10px;margin-top: 10px;" type="button" >Add</button>
-     <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 Ingredients required(Max Characters of all the ingredients should be 240(including spaces))</label>
-     <ul id="ulingredients" style="height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color: yellow">
+     <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 Ingredients required</label>
+     <ul id="ulingredients" style="overflow:auto;height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color: black;color:black;font-weight:bold">
 
      </ul>
-      <div id="calculate1" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt">0</div>
+     
  
     
     <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethod" style="margin-top: 5px;margin-left: 10px;width: 500px;">
-  <div id="calculate" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
-  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 steps required(Max Characters of all the steps should be 240(including spaces))</label>
+ 
+  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:10px;">Min 2 steps required</label>
  
     <ol id="olsteps" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:yellow;"></ol><br>
     
@@ -267,14 +273,14 @@ Logout&nbsp;
 
     </select>
     <button class="btn btn-info" id="btnaddtolistedit" style="margin-left: 10px;margin-top: 10px;" type="button" >Add</button>
-    <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 Ingredients required(Max Characters of all the ingredients should be 240(including spaces))</label>
-     <ul id="ulingredientsedit" style="height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color:yellow;">
+    <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 Ingredients required</label>
+     <ul id="ulingredientsedit" style="overflow:auto;height: 100px;width: 500px;border: 2px solid black;padding: 10px;margin-left: 10px;margin-top: 10px;background-color:black;color:black;font-weight:bold">
 
      </ul>
-      <div id="calculate2" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
+      
     <input type="text" class="form-control" placeholder="Method : (Write Step And Press Enter To Add The Step)" id="inpmethodedit" style="margin-top: 5px;margin-left: 10px;width: 500px;">
-  <div id="calculate3" style="color:white;padding:2px;margin-left:3px;background-color:red;color:white;font-size:8pt;">0</div>
-  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 steps required(Max Characters of all the steps should be 240(including spaces))</label>
+  
+  <label style="font-weight:bold;color: white;font-size:8pt;background-color:red;margin-left:15px;">Min 2 steps required</label>
     <ol id="olstepsedit" style="margin-top:10px;margin-left: 10px;width: 550px;background-color:yellow"></ol><br>
 
     <div class="input-group mb-3" style="margin-left: 10px;">

@@ -8,6 +8,17 @@ const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
 const multer = require('multer')
+const {Client} = require('pg')
+
+const client = new Client({
+    user: 'sambhavgupta',
+    host: 'localhost',
+    database: 'cookbook',
+    password: '9844',
+    port: 5432,
+  })
+  
+client.connect()
 
 const SERVER_PORT =  process.env.PORT || 6789
 app.use(express.json())
@@ -16,7 +27,7 @@ app.use(express.urlencoded({extended: true}))
 // using multer to upload profile pictures of users
 var storage = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../Project1/profilepictures')
+        cb(null,'../COOKBOOK.com/profilepictures')
     },
     filename: (req,file,cb)=>{
        
@@ -66,20 +77,19 @@ var storage = multer.diskStorage({
                     return
                 }else{
                   
-                Users.create({
-                    Firstname: req.body.fname,
-                    Lastname: req.body.lname,
-                    Username: req.body.uname,
-                    Password: req.body.pword,
-                    Dp: req.file.filename
-                }).then((user)=>{
-                    res.send("Signed up "+ req.body.uname +" succesfully")
+                const users = 'INSERT INTO users (firstname,lastname,username,password,dp,date,time) VALUES($1,$2,$3,$4,$5,$6,$7)'
+                const data = [req.body.fname,req.body.lname,req.body.uname,req.body.pword,req.file.filename,new Date().getDate() + '/'+(new Date().getMonth()+1) +'/'+new Date().getFullYear(), new Date().getHours() + ':' + new Date().getMinutes()]
+                client.query(users,data,(err,result)=>{
+                    if(result){
+                        res.send("Signed up "+ req.body.uname +" succesfully")
                     
+                        return
+                    }else{
+                        res.send("User " + req.body.uname + " Already Exists . Please login!!")
                     return
-                }).catch((err)=>{
-                   res.send("User " + req.body.uname + " Already Exists . Please login!!")
-                    return
+                    }
                 })
+                
                 console.log("Uploaded Successfully")
                
                   
@@ -109,21 +119,24 @@ app.use('/signin',express.static(path.join(__dirname,'./public/signin.html')))
 
 // fetching details of user on login
 app.post('/signin',(req,res)=>{
-Users.findOne({
-    where:{
-        Username: req.body.username
-    }
-}).then((user)=>{
-    if(!user){
+
+    const query = {text: 'SELECT * FROM users where username = $1',
+values:[req.body.username]}
+client
+.query(query)
+.then((user)=>{
+    if(!user.rows[0]){
         res.send("signup")
-    }else if(user.Password != req.body.password){
+    }else if(user.rows[0].password != req.body.password){
         res.send("password")
-    }else if(user.Username != req.body.username){
+    }else if(user.rows[0].username != req.body.username){
         res.send("username")
     }else{
       res.send("success")
     }
 })
+.catch((err)=> console.log(err))
+    
 
 
 })
@@ -139,19 +152,19 @@ app.get('/content',(req,res)=>{
         res.redirect('/')
         return
       }
-      Users.findOne({
-          where:{
-              Username: req.session.username
+      const query = {text :'SELECT * FROM users WHERE username = $1',values:[req.session.username]}
+      client.query(query,(err,result)=>{
+          if(result){
+           const userinfo = {name: result.rows[0].username,
+                image : result.rows[0].dp}
+                console.log(userinfo)
+                res.render('content',{userinfo})
+        
+          }else{
+              console.log(err)
           }
-      }).then((user)=>{
-        const userinfo = {name: user.Username,
-        image : user.Dp}
-        console.log(userinfo)
-        res.render('content',{userinfo})
-
-      }).catch((err)=>{
-          console.log(err)
       })
+    
      
       
 })
@@ -170,70 +183,62 @@ io.on('connection',(socket)=>{
 
 
         let friendlist = []
-        Friendlist.findAndCountAll({
-            where:{
-                Username : data.username
-            }
-        }).then((friends)=>{
-            for(let i=0;i<friends.count;i++){
-                friendlist.push(friends.rows[i].dataValues.Friendname)
+        const query = {text:'select*from friendlist where username = $1 ',values:[data.username]}
+        client.query(query)
+        .then((friends)=>{
+            for(let i=0;i<friends.rows.length;i++){
+                friendlist.push(friends.rows[i].friendname)
             }
             io.to(data.username).emit('gotfriends',friendlist)
         })
+     
     })
 
     socket.on('getrecipesoffriends',(data)=>{
        console.log(data)
+     
      for(let i=0;i<data.length;i++){
         let recipes = []
-        Recipes.findAndCountAll({
-            where:{
-                Uploader : data[i]
-            }
-        }).then((recipe)=>{
-            if(recipe){
-                for(let i=0;i<recipe.count;i++){
-                    recipes.push(recipe.rows[i].dataValues.id)
+        const query = {text: 'select*from recipes where uploader = $1',values:[data[i]]}
+        client.query(query)
+        .then((recipe)=>{
+            if(recipe.rows){
+                console.log(recipe.rows)
+                for(let i=0;i<recipe.rows.length;i++){
+
+                    recipes.push(recipe.rows[i].id)
 
                 }
-              
+                
+                socket.emit('foundrecipes',recipes)
+               
             }
-            socket.emit('foundrecipes',recipes)
-           
-
         })
+      
         
      }
-   
+
     })
     // returning recipes for given id
     socket.on('getrecipe',(data)=>{
-        Recipes.findOne({
-            where:{
-                id:data
-            }
-        }).then((recipe)=>{
-            socket.emit('foundrecipe',recipe.dataValues)
+        const query = {text: 'select*from recipes where id = $1',values:[data]}
+        client.query(query)
+        .then((recipe)=>{
+            socket.emit('foundrecipe',recipe.rows[0])
         })
+        
     })
 
     socket.on('commentsend',(data)=>{
-        Comments.create({
-           Recipe : data.recipeid,
-           Sender : data.sender,
-           Owner: data.owner,
-           Deleted: false,
-           Comment: data.msg,
-           ImageSender: data.senderimage,
-           Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
-           Time: new Date().getHours() + ':' + new Date().getMinutes(),
-
-        }).then((comment)=>{
-
-           
-            socket.broadcast.emit('commentreceive',comment)
-            
-        })
+        const query = {text:'insert into comments(recipe,sender,owner,deleted,comment,imagesender,date,time) values($1,$2,$3,$4,$5,$6,$7,$8) returning recipe,sender,owner,deleted,comment,imagesender,date,time',
+    values:[data.recipeid,data.sender,data.owner,false,data.msg,data.senderimage,new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),new Date().getHours() + ':' + new Date().getMinutes(),]
+    }
+    client.query(query)
+    .then(comment=>{
+       console.log(comment)
+        socket.broadcast.emit('commentreceive',comment.rows[0])
+    })
+       
        
        
     })
@@ -270,42 +275,51 @@ io.on('connection',(socket)=>{
     })
 
     socket.on("notify",(data)=>{
-        NotificationsRecipes.create({
-            Sender: data.user,
-            Notification: "Added a recipe",
-            Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
-            Time: new Date().getHours() + ':' + new Date().getMinutes(),
-            SenderImage: data.userimage
-        })
-        Friendlist.findAndCountAll({
-            where: {Username : data.user}
-        }).then((friends)=>{
-            for(let i=0;i<friends.count;i++){
-                io.to(friends.rows[i].dataValues.Friendname).emit("notificationrecipe",(data))
-            }
-        })
+        const query1 = {text: 'insert into notificationsrecipes(sender,notification,date,time,senderimage) values($1,$2,$3,$4,$5)'
+    , values:[data.user,"Added a recipe",new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),new Date().getHours() + ':' + new Date().getMinutes(),data.userimage]
+
+    }
+    client.query(query1)
+    const query2 = {text:'select*from friendlist where username = $1',values:[data.user]}
+client.query(query2)
+.then((friends)=>{
+    for(let i=0;i<friends.rows.length;i++){
+        io.to(friends.rows[i].friendname).emit("notificationrecipe",(data))
+    }
+})
+
+        
     })
     socket.on('getnotificationsrecipes',(data)=>{
         for(let i=0;i<data.array.length;i++){
-            NotificationsRecipes.findAndCountAll({
-                where: {
-                    Sender: data.array[i]
-                }
-            }).then((notification)=>{
-                if(notification){
-                    for(let i=0;i<notification.count;i++){
+
+            const query = {text: 'select*from notificationsrecipes where sender = $1',values:[data.array[i]]}
+            client.query(query)
+            .then((notification)=>{
+                if(notification.rows){
+                    for(let i=0;i<notification.rows.length;i++){
 
                     
-                    io.to(data.user).emit("gotnotificationsrecipes",{msg : notification.rows[i].dataValues.Notification , image: notification.rows[i].dataValues.SenderImage ,sender: notification.rows[i].dataValues.Sender,date: notification.rows[i].dataValues.Date , time : notification.rows[i].dataValues.Time })
+                    io.to(data.user).emit("gotnotificationsrecipes",{msg : notification.rows[i].notification , image: notification.rows[i].senderimage ,sender: notification.rows[i].sender,date: notification.rows[i].date , time : notification.rows[i].time })
                     }
                 }
             })
+         
 
         }
         
     })
 
     socket.on("msgsend",(data)=>{
+        const query = {text:'insert into chats(sender,receiver,message,date,time) values($1,$2,$3,$4,$5) returning sender,receiver,message,date,time',
+    values:[data.from,data.to,data.msg,new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),new Date().getHours() + ":" + new Date().getMinutes()]
+    }
+    client.query(query)
+    .then((message)=>{
+        io.to(data.to).emit("msgreceive",message.rows[0])
+    }).catch((err)=>{
+        console.log(err)
+    })
         Chats.create({
             Sender: data.from,
             Receiver: data.to,
@@ -343,14 +357,15 @@ app.post('/logout',(req,res)=>{
 // getting all the users 
 app.post('/getallusers',(req,res)=>{
     let userlistserver = []
-    Users.findAndCountAll().then((users)=>{
-for(let i=0;i<users.count;i++){
-    userlistserver.push(users.rows[i].dataValues.Username + "=" + users.rows[i].dataValues.Dp)
-
-}
-res.send(userlistserver)
-
+    const query = {text:'select*from users'}
+    client.query(query)
+    .then((users)=>{
+        for(let i=0;i<users.rows.length;i++){
+            userlistserver.push(users.rows[i].username + "=" + users.rows[i].dp)
+        }
+        res.send(userlistserver)
     })
+
   
     
 })
@@ -358,7 +373,7 @@ res.send(userlistserver)
 // add recipe in database
 var storagerecipe = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../Project1/recipepics')
+        cb(null,'../COOKBOOK.com/recipepics')
     },
     filename: (req,file,cb)=>{
        
@@ -403,25 +418,17 @@ var storagerecipe = multer.diskStorage({
                     return
                 }else{
 
-                  console.log(req.body.steps.toString().trim())
-           Recipes.create({
-               Uploader: req.body.username,
-               NameOfDish : req.body.nameofdish,
-               Type: req.body.type,
-                Image: req.file.filename,
-                Ingredients : req.body.ingredients.toString().trim(),
-                Method : req.body.steps.toString().trim(),
-                Cuisine : req.body.cuisine,
-                Deleted : false,
-                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
-                Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),
-                UploaderImage: req.body.uploaderimage
-           }).then((created)=>{
-            res.send(created)
+                const query = {text:'insert into recipes(uploader,nameofdish,type,ingredients,method,image,cuisine,time,date,deleted,uploaderimage) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+            values:[req.body.username,req.body.nameofdish,req.body.type,req.body.ingredients.toString().trim(),req.body.steps.toString().trim(), req.file.filename,req.body.cuisine,new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),false,req.body.uploaderimage]
+            }
+            client.query(query)
+            .then((created)=>{
+                res.send(created.rows[0])
+            })
 
-           }).catch((err)=>{
-               res.send("limit")
-           })
+
+
+          
            
 
                console.log("Uploaded Successfully")
@@ -435,82 +442,72 @@ var storagerecipe = multer.diskStorage({
 
 // adding friends
 app.post('/addfriend',(req,res)=>{
-    Users.findOne({
-        where:{
-            Username: req.body.friendname
-        }
-    }).then((user)=>{
-        if(user){
-            Friendlist.create({
-                Username: req.body.username,
-                Friendname: req.body.friendname,
-                Image : user.Dp
-            })
-            NotificationsFriends.create({
-                Sender: req.body.username,
-                Notification: "Added You as a Friend",
-                Date: new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),
-                Time: new Date().getHours() + ':' + new Date().getMinutes(),
-                Receiver: req.body.friendname,
-                SenderImage : req.body.image
 
-            })
+    const query = {text: 'select*from users where username = $1',values:[req.body.friendname]}
+    client.query(query)
+    .then((user)=>{
+        if(user.rows[0]){
+            const query = {text: 'insert into friendlist(username,friendname,image) values($1,$2,$3)',values:[req.body.username,req.body.friendname,user.rows[0].dp]}
+            client.query(query)
+           const query2 = {text : 'insert into notificationsfriends(sender,notification,date,time,senderimage,receiver) values($1,$2,$3,$4,$5,$6)',
+           values:[req.body.username,"Added You as a Friend",new Date().getDate() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getFullYear(),new Date().getHours() + ':' + new Date().getMinutes(),req.body.image,req.body.friendname]}
+            client.query(query2)
 io.to(req.body.friendname).emit("notifyfriend",{sender: req.body.username , msg: "Added You as a friend" ,image:req.body.image})
-            res.send(user.Dp)
-        }else{
+            res.send(user.rows[0].dp)
+        } else{
             res.send("Failed")
         }
+    }).catch((err)=> console.log(err))
+  
     })
 
-})
 
 // my recipes
 app.post('/myrecipes',(req,res)=>{
     let myrecipes = []
-    Recipes.findAndCountAll({
-        where:{
-            Uploader: req.body.username
+
+    const query = {text:'select*from recipes where uploader = $1',values:[ req.body.username]}
+    client.query(query)
+    .then((recipe)=>{
+        if(recipe.rows){
+            for(let i=0;i<recipe.rows.length;i++){
+                myrecipes.push(recipe.rows[i])
+            }
+            res.send(myrecipes)
+        }else{
+            res.send("No")
         }
-    }).then((recipe)=>{
-        if(recipe){
-        for(let i=0;i<recipe.count;i++){
-            myrecipes.push(recipe.rows[i].dataValues)
-        }
-        res.send(myrecipes)
-    }else{
-        res.send("No")
-    }
     })
+
 })
 
 app.post('/getcomments',(req,res)=>{
-    Comments.findAndCountAll({
-        where:{
-            Recipe: req.body.id
-        }
-    }).then((comments)=>{
-        let commentlist = []
-        for(let i=0;i<comments.count;i++){
-            commentlist.push(comments.rows[i].dataValues)
-        }
-       
-        res.send(commentlist)
-    })
+
+    const query = {text:'select*from comments where recipe = $1',values:[req.body.id]}
+client.query(query)
+.then((comments)=>{
+    let commentlist = []
+    for(let i=0;i<comments.rows.length;i++){
+        commentlist.push(comments.rows[i])
+    }
+   
+    res.send(commentlist)
+})
+   
 })
 // editing a recipe
 app.post('/getrecipedetails',(req,res)=>{
-    Recipes.findOne({
-        where:{
-            id: req.body.id
-        }
-    }).then((recipe)=>{
-        res.send(recipe)
+    const query = {text:'select*from recipes where id= $1',values:[req.body.id]}
+    client.query(query)
+    .then((recipe)=>{
+        res.send(recipe.rows[0])
     })
+   
 })
 // editing
 var storagerecipeedit = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../Project1/recipepics')
+        cb(null,'../COOKBOOK.com/recipepics')
     },
     filename: (req,file,cb)=>{
        
@@ -552,31 +549,23 @@ var storagerecipeedit = multer.diskStorage({
                 return
             }else {
                 if(req.file == undefined){
-                    Recipes.update({
-                        Uploader: req.body.username,
-                        NameOfDish : req.body.nameofdish,
-                        Type: req.body.type,
-                         Ingredients : req.body.ingredients.toString().trim(),
-                         Method : req.body.steps.toString().trim(),
-                         Cuisine : req.body.cuisine,
-                         Deleted : false,
-                         Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
-                    },{where : { id: req.body.id}})
+
+                    const query = {text:'update recipes set uploader=$1,nameofdish=$2,type=$3,ingredients=$4,method=$5,cuisine=$6,deleted=$7,time=$8,date=$9 where id=$10',
+                values:[req.body.username,req.body.nameofdish,req.body.type,req.body.ingredients.toString().trim(),req.body.steps.toString().trim(), req.body.cuisine,false,new Date().getHours() + ':' + new Date().getMinutes(),new Date().getDate()+'/'+(new Date().getMonth()+1)+'/'+ new Date().getFullYear(),req.body.id]
+                }
+            client.query(query)
+
+                    
                     res.send("Updated Successfully")
                     return
                 }else{
-                  console.log(req.body.steps)
-           Recipes.update({
-               Uploader: req.body.username,
-               NameOfDish : req.body.nameofdish,
-               Type: req.body.type,
-                Image: req.file.filename,
-                Ingredients : req.body.ingredients.toString(),
-                Method : req.body.steps.toString(),
-                Cuisine : req.body.cuisine,
-                Deleted : false,
-                Time: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds()
-           },{where : { id: req.body.id}})
+
+                    const query = {text:'update recipes set uploader=$1,nameofdish=$2,type=$3,ingredients=$4,method=$5,cuisine=$6,deleted=$7,time=$8,date=$9,image=$10 where id=$11',
+                    values:[req.body.username,req.body.nameofdish,req.body.type,req.body.ingredients.toString().trim(),req.body.steps.toString().trim(), req.body.cuisine,false,new Date().getHours() + ':' + new Date().getMinutes(),new Date().getDate()+'/'+(new Date().getMonth()+1)+'/'+ new Date().getFullYear(),req.file.filename,req.body.id]
+                    }
+                client.query(query)
+     
+                 
            res.send("Updated Successfully")
                console.log("Uploaded Successfully")
                   
@@ -586,91 +575,89 @@ var storagerecipeedit = multer.diskStorage({
     })
 // deleting a recipe
 app.post('/deleterecipe',(req,res)=>{
-    Recipes.update({Deleted: true},{where:{id:req.body.id}})
+    const query = {text:'update recipes set deleted = $1',values:[true]}
+    client.query(query)
+
+
     res.send("deleted")
 })
 // notifications
 app.post('/getnotification',(req,res)=>{
-    NotificationsFriends.findAndCountAll({
-        where:{
-            Receiver: req.body.user
-        }
-    }).then((msg)=>{
-        if(msg){
+    const query = {text:'select*from notificationsfriends where receiver = $1',values:[req.body.user]}
+    client.query(query)
+    .then((msg)=>{
+        if(msg.rows){
             let list = []
-            for(let i=0;i<msg.count;i++){
-                list.push(msg.rows[i].dataValues)
+            for(let i=0;i<msg.rows.length;i++){
+                list.push(msg.rows[i])
             }
             res.send(list)
         }
     })
+  
 
 })
 
 app.post("/getdetails",(req,res)=>{
-    Comments.findOne({
-        where: {
-            id : req.body.id
-        }
-    }).then((detail)=>{
-        res.send(detail)
+    const query = {text:'select*from comments where id = $1',values:[req.body.id]}
+    client.query(query)
+    .then((detail)=>{
+        res.send(detail.rows[0])
     })
+    
 })
 app.post('/deletecomment',(req,res)=>{
-    Comments.update({Deleted: true},{where:{id:req.body.id}})
+    const query = {text: 'update comments set deleted= $1',values:[true]}
+   client.query(query)
     res.send("Deleted")
 })
 // myfriends
 app.post('/getfriends',(req,res)=>{
     let list = []
-    Friendlist.findAndCountAll({
-        where: {
-            Username : req.body.user
-    }}).then((friends)=>{
-        for(let i=0;i<friends.count;i++){
-            list.push(friends.rows[i].dataValues)
+    const query = {text: 'select*from friendlist where username = $1',values:[ req.body.user]}
+    client.query(query)
+    .then((friends)=>{
+        for(let i=0;i<friends.rows.length;i++){
+            list.push(friends.rows[i])
         }
         res.send(list)
     })
+   
 })
 app.post('/getrecipes',(req,res)=>{
     let list = []
-    Recipes.findAndCountAll({
-        where:{
-            Uploader : req.body.Owner
-        }
-    }).then((recipes)=>{
-        for(let i=0;i<recipes.count;i++){
-            list.push(recipes.rows[i].dataValues)
+    const query = {text: 'select* from recipes where uploader = $1',values:[req.body.Owner]}
+    client.query(query)
+    .then((recipes)=>{
+        for(let i=0;i<recipes.rows.length;i++){
+            list.push(recipes.rows[i])
         }
         res.send(list)
     })
+   
 })
 app.post('/getchat',(req,res)=>{
-    Chats.findAndCountAll({
-       
-            Receiver : req.body.receiver
-        
-    }).then((chats)=>{
+
+    const query = {text:'select*from chats where (receiver = $1 and sender = $2) or (sender = $1 and receiver = $2)',values:[req.body.sender.trim(),req.body.receiver.trim()]}
+    client.query(query)
+    .then((chats)=>{
         let chatlist = []
-        for(let i=0;i<chats.count;i++){
-            if((chats.rows[i].dataValues.Sender == req.body.sender && chats.rows[i].dataValues.Receiver == req.body.receiver) ||  (chats.rows[i].dataValues.Receiver == req.body.sender && chats.rows[i].dataValues.Sender == req.body.receiver)){
-                chatlist.push(chats.rows[i].dataValues)
+  
+        for(let i=0;i<chats.rows.length;i++){
+            if((chats.rows[i].sender == req.body.sender && chats.rows[i].receiver == req.body.receiver) ||  (chats.rows[i].receiver == req.body.sender && chats.rows[i].sender == req.body.receiver)){
+                chatlist.push(chats.rows[i])
             }
            
         }
+    
         res.send(chatlist)
-
     })
+ 
 })
 
 app.post('/deletefriend',(req,res)=>{
-    Friendlist.destroy({
-        where:{
-            Username: req.body.user,
-            Friendname: req.body.friend
-        }
-    })
+    const query = {text:'delete from friendlist where username = $1 and friendname = $2',values:[req.body.user,req.body.friend]}
+   client.query(query)
     res.send("Deleted")
 })
 
