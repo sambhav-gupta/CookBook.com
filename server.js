@@ -13,7 +13,7 @@ const {Client} = require('pg')
 
 
 const { Pool , Client } = require('pg');
-const pool = new Pool({
+const client = new Client({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
@@ -143,7 +143,7 @@ app.set('views',__dirname + '/views')
 app.use('/',express.static(path.join(__dirname,'./public')))
 app.get('/db', async (req, res) => {
     try {
-      const client = await pool.connect();
+      const client = await client.connect();
       const result = await client.query('SELECT * FROM users');
       const results = { 'results': (result) ? result.rows : null};
       res.send(results );
