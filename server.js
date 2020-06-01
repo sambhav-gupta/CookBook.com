@@ -21,14 +21,7 @@ const client = new Client({
 
 client.connect();
 
-client.query('SELECT table_schema,table_name FROM information_schema.tables;', (err, res) => {
-  if (err) throw err;
-  for (let row of res.rows) {
-    console.log(JSON.stringify(row));
-  }
-  client.end();
-});
-
+ 
   
 
 
@@ -39,7 +32,7 @@ app.use(express.urlencoded({extended: true}))
 // using multer to upload profile pictures of users
 var storage = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../COOKBOOK.com/profilepictures')
+        cb(null,path.join(__dirname,'/profilepictures'))
     },
     filename: (req,file,cb)=>{
        
