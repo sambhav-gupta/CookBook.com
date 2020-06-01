@@ -11,12 +11,12 @@ const multer = require('multer')
 const {Client} = require('pg')
 
 const client = new Client({
-    user: 'sambhavgupta',
-    host: 'localhost',
-    database: 'cookbook',
-    password: '9844',
-    port: 5432,
-  })
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+
   
 client.connect()
 
