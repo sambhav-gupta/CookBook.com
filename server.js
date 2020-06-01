@@ -12,27 +12,27 @@ const multer = require('multer')
 
 
 
-const { Pool } = require('pg');
-const pool = new Pool({
+const { Client } = require('pg');
+const client= new Client({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }
 });
-const client =  pool.connect();
+client.connect();
 
-app.get('/db', async (req, res) => {
-    try {
+// app.get('/db', async (req, res) => {
+//     try {
      
-      const result = await client.query('SELECT * FROM users');
-      const results = { 'results': (result) ? result.rows : null};
-      res.send(results );
-      client.release();
-    } catch (err) {
-      console.error(err);
-      res.send("Error " + err);
-    }
-  })
+//       const result = await client.query('SELECT * FROM users');
+//       const results = { 'results': (result) ? result.rows : null};
+//       res.send(results );
+//       client.release();
+//     } catch (err) {
+//       console.error(err);
+//       res.send("Error " + err);
+//     }
+//   })
 // const client = new Client({
 //   connectionString: process.env.DATABASE_URL,
 //   ssl: {
