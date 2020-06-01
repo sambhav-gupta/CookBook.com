@@ -26,7 +26,7 @@ client.query('SELECT table_schema,table_name FROM information_schema.tables;', (
   for (let row of res.rows) {
     console.log(JSON.stringify(row));
   }
-  client.end();
+
 });
 
   
@@ -673,8 +673,8 @@ app.post('/deletefriend',(req,res)=>{
     res.send("Deleted")
 })
 
+client.end();
 
-db.sync().then(()=>{console.log("Database Created")})
 server.listen(SERVER_PORT,()=>{
     console.log("Server at http://localhost:6789")
 })
