@@ -19,10 +19,11 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
 });
+const client =  pool.connect();
 
 app.get('/db', async (req, res) => {
     try {
-      const client = await pool.connect();
+     
       const result = await client.query('SELECT * FROM users');
       const results = { 'results': (result) ? result.rows : null};
       res.send(results );
