@@ -416,7 +416,7 @@ app.post('/getallusers',(req,res)=>{
 // add recipe in database
 var storagerecipe = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../COOKBOOK.com/recipepics')
+        cb(null,path.join(__dirname,'/recipepics'))
     },
     filename: (req,file,cb)=>{
        
@@ -550,7 +550,7 @@ app.post('/getrecipedetails',(req,res)=>{
 // editing
 var storagerecipeedit = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,'../COOKBOOK.com/recipepics')
+        cb(null,path.join(__dirname,'/recipepics'))
     },
     filename: (req,file,cb)=>{
        
