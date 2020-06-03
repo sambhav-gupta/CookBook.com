@@ -19,7 +19,7 @@ let imgusersrc = $('#imguser').attr("src")
    
 // get all users for search purpose for adding friends            
 $.post('/getallusers',(data)=>{
-console.log(data)
+
 for(let i=0;i<data.length;i++){
 let name = data[i].split("=")[0]
 let image = data[i].split("=")[1]
@@ -41,7 +41,7 @@ $('#inpfriendusername').keypress((e)=>{
 $('#searcheduser').show()
 
 let length = $('#inpfriendusername').val().length
-console.log(length)
+     
 
 for(let i=0;i<userlist.length;i++){
 if(userlist[i].id == currentuser){
@@ -98,7 +98,7 @@ image: imgusersrc
         return
     }
 else{
-    console.log(data)
+ 
 
     friendlist.push($('#inpfriendusername').val())
     $('#divfriendlist').append($(`
@@ -148,10 +148,10 @@ countclick = 0;
 onemorecounter = 0;
 
 
-console.log("test " +  clicknumber)
+
 
     clicknumber++
-    console.log("test " +  clicknumber)
+
     if(clicknumber%2==0){
         $('#addnewrecipe').css("background-color", "transparent")
         $('#divposts').show()
@@ -188,15 +188,9 @@ if(Ingredient == "" || Quantity== ""){
 return
 }
 $('#ulingredients').append($(`
-<li style="background-color:yellow;">${Ingredient}(${Quantity} ${unit}) </li>
+<li style="background-color:white;">${Ingredient}(${Quantity} ${unit})  </li>
 `))
-let initial = 0
-$('#ulingredients li').each(function(index){
-     initial += ($(this).text().trim().length)
-    })
 
-
-$('#calculate1').text(initial)
 
 $('#inpingredient').val("")
 $('#inpquantity').val("")
@@ -215,27 +209,24 @@ if( $('#inpmethod').val() ==""){
 }
 let step = $('#inpmethod').val()
 $('#olsteps').append($(`
-<li style="background-color:yellow;border-bottom:1px solid black">  <button type="button"  onclick="up(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-up-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+<li style="background-color:white;border-bottom:1px solid black">  <button type="button"  onclick="up(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-up-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm3.354 8.354a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 6.207V11a.5.5 0 0 1-1 0V6.207L5.354 8.354z"/>
 </svg></button><button type="button" onclick="down(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-down-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 5a.5.5 0 0 0-1 0v4.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V5z"/>
 </svg></button>  <t>${step}</t></li>
 `))
-let length = $('#inpmethod').val().length
-let initial = parseInt($('#calculate').text())
-initial += length
-$('#calculate').text(initial)
+
 
 $('#inpmethod').val("")
 }
 })
 
 function up(obj){
-console.log("up")
+
 $(obj).parent().insertBefore($(obj).parent().prev())
 }
 function down(obj){
-console.log("down")
+
 $(obj).parent().insertAfter($(obj).parent().next())
 }
 $('#inpingredient').keypress((e)=>{
@@ -253,21 +244,12 @@ e.preventDefault()
 
 
 $("#ulingredients").on("click","li",function() {
-    let length = $(this).text().trim().length
-    console.log(length)
-    let initial = parseInt($('#calculate1').text())
-    initial -= length
-    $('#calculate1').text(initial)
+  
 $(this).remove();
 })
 $("#olsteps").on("click","li t",function() {
 
-    let length = $(this).text().length
-    console.log(length)
-    let initial = parseInt($('#calculate').text())
-    initial -= length
-    $('#calculate').text(initial)
-   
+    
 $(this).parent().remove();
 
 })
@@ -297,7 +279,7 @@ e.stopPropagation();
 $(this).remove()
 $('#inprecipeimage').val("")
 $('#share').hide()
-console.log($('#inprecipeimage').val())
+
 
 })
 
@@ -338,21 +320,14 @@ formData.append("cuisine",cuisine)
 formData.append("type",type)
 formData.append("username",currentuser)
 
-console.log(formData.getAll("ingredients"))
-console.log(formData.getAll("steps"))
-console.log(formData.get("cuisine"))
-console.log(formData.get("nameofdish"))
-console.log(formData.get("type"))
+
 $.ajax({
 url: '/addrecipe',
 type: 'POST',
 data: formData,
 success: function(data){
-    if(data=="limit"){
-        alert("Steps limit Exceeded")
-       return
-    }
-    console.log(data)
+  
+  console.log(data)
     socket.emit("notify",{user : currentuser,userimage : imgusersrc , details: data})
 alert("Uploaded")
 
@@ -421,14 +396,14 @@ socket.emit('getrecipe',data[i])
 
 
 
-console.log(recipelist)
+
 socket.on('foundrecipe',(data)=>{
     
 if(data.deleted == true){
     return
 }else{
 
-$('#divposts').prepend($(`<div id="posts${data.id}"></div>`))
+$('#divposts').prepend($(`<div id="posts${data.id}" style="border-bottom: 2px solid white;"></div><br>`))
 
 $('#posts'+data.id).append($(`
 <div class="divname${data.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.uploaderimage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.id}" style="font-weight:bold;color:white;">${data.uploader} </t></div>
@@ -466,15 +441,16 @@ $('.ulmethod'+data.id).append($(`<li style="color:white;">${arrayofsteps[i]}</li
 $('#posts'+data.id).append($(`<br><img src="${data.image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
 
 $('#posts'+data.id).append($(`
-<br><br><div class="commentbox${data.id}" style="height:200px;border:2px solid black;color: white;">
-<t style="margin-left:230px;color: white;color:white;">Comments</t><br>
-<ul class="comments${data.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
+<br><br><div class="commentbox${data.id}" style="height:200px;border:2px solid white;color: white;border-radius:25px;">
+<t style="margin-left:230px;color: white;color:white;font-weight:bold">Comments</t><br>
+<ul class="comments${data.id}" style="height:120px;overflow:auto;list-style-type:none;padding-left:10px;color: white;padding:5px;">
 </ul>
-<input class="inpcomment${data.id}" style="width:450px;margin-left:10px;color:black;text-align:center;" placeholder="Write A Comment About This Dish.....">
+<input class="inpcomment${data.id}" style="width:450px;margin-left:20px;color:black;text-align:center;" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data.id},btn btn-success btn-xsm" onclick="Send
 (this)" >SEND</button>
-</div><br>
-<div style="height:2px;background-color:white;padding:0px;"></div><br>
+<br>
+</div>
+<br>
 
 `))
 
@@ -505,8 +481,7 @@ for(let i=0;i<data.length;i++){
 function Send(obj){
    
 let id = $(obj).attr('class')
-console.log(id)
-console.log(id)
+
 
 id = id.split(",")[0]
 id = id.split("btncomment")[1]
@@ -515,7 +490,7 @@ if($('.inpcomment'+id).val().length == 0){
     return
 }else{
 
-    console.log($('.divrecipe'+id).text())
+
 $('.comments'+id).append($(`<li style="color: black;border:2px solid black;border-radius:25px;margin-right:150px;background-color:white;text-align:center">${currentuser} <img src="${imgusersrc}" style="height:20px;width:20px;border-radius:50%;"></img> : ${$('.inpcomment'+id).val()}</li>`))
 $('.comments'+id).scrollTop($('.comments'+id)[0].scrollHeight);
 socket.emit('commentsend',{msg: $('.inpcomment'+id).val(),
@@ -555,14 +530,14 @@ function showoptions(id){
     {
       
         if(data.sender.trim() == currentuser.trim()){
-            console.log("sender == currentuser")
+           
             $('#divcomment'+id).show()
 
         }else if(data.owner.trim() == currentuser.trim()){
-            console.log("owner == currentuser")
+         
             $('#divcomment'+id).show()
         }else{
-            console.log("else")
+        
             return
         }
         
@@ -620,7 +595,7 @@ clickcounter = 0;
 onemorecounter = 0;
 
 countclick++
-console.log(countclick)
+
 if(countclick%2==0){
     $('#diveditrecipe').hide()
 $('#divmyposts').hide()
@@ -634,8 +609,7 @@ $('#myrecipes').css("background-color","transparent")
 }else{
     $('#divfriends').empty()
     $('#divfriends').hide()
- 
-  console.log("clicked")
+
   $('#myrecipes').css("background-color","green")
   $('#diveditrecipe').hide()
   $('#divmyposts').empty()
@@ -653,7 +627,7 @@ for(let i=0;i<data.length;i++){
     if(data[i].deleted){
         continue
     }else{
-        $('#divmyposts').prepend($(`<div id="myposts${data[i].id}"></div>`))
+        $('#divmyposts').prepend($(`<div id="myposts${data[i].id}" style="border-bottom:2px solid white"></div><br>`))
 $('#myposts'+data[i].id).append($(`
 <div class="divname${data[i].id}" style="font-size:15pt;font-family: monospace;font-weight:bold;color: white;padding:5px;"><img src="${data[i].uploaderimage}" style="height:40px;width:40px;border-radius:50%;"></img> ${data[i].uploader} <button id="btnedit${data[i].id}" data-toggle="tooltip" data-placement="top" title="Click to edit this Recipe" onclick="edit(this.id)" style="background-color:green;"><svg style="background-color: green" class="bi bi-pen" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M5.707 13.707a1 1 0 01-.39.242l-3 1a1 1 0 01-1.266-1.265l1-3a1 1 0 01.242-.391L10.086 2.5a2 2 0 012.828 0l.586.586a2 2 0 010 2.828l-7.793 7.793zM3 11l7.793-7.793a1 1 0 011.414 0l.586.586a1 1 0 010 1.414L5 13l-3 1 1-3z" clip-rule="evenodd"/>
@@ -694,30 +668,24 @@ $('.ulmethod'+data[i].id).append($(`<li style="color: white;">${arrayofsteps[j]}
 $('#myposts'+data[i].id).append($(` <br> <img src="${data[i].image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
 
 $('#myposts'+data[i].id).append($(`<br><br>
-<div class="commentbox${data[i].id}" style="height:200px;border:2px solid black;color: white;">
+<div class="commentbox${data[i].id}" style="height:200px;border:2px solid white;color: white;border-radius:25px;">
 <t style="margin-left:230px;color: white;color:white;">Comments</t>
 <ul class="comments${data[i].id}" style="height:120px;overflow:auto;list-style-type:none;padding-left:10px;color: white;">
 </ul>
 
-<input class="inpcomment${data[i].id}" style="width:450px;margin-left:10px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
+<input class="inpcomment${data[i].id}" style="width:450px;margin-left:20px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
 <button class="btncomment${data[i].id},btn btn-success btn-xsm" onclick="Send(this)">SEND</button>
 </div>
 <br>
-<div style="height:2px;background-color:black;padding:0px;"></div><br>
+
 
 
 `))
 
-/*{{!-- socket.emit('getcomments',{recipeid: data[i].id})
 
-socket.on('gotcomments',(data)=>{
-
-$('.comments'+data.recipeid).append($(`<li id="${data.id}">${data.sender} : ${data.comment}</li>`))
-console.log(data)
-}) --}}*/
 $.post('/getcomments',{id : data[i].id},(list)=>{
 
-console.log(list)
+
 for(let i=0;i<list.length;i++){
     if(list[i].Deleted){
         continue
@@ -757,54 +725,45 @@ function edit(id){
     $.post('/getrecipedetails',{id : id},(data)=>{
     
 
-        $('#inpeditnameofdish').val(data.NameOfDish)
-        $('#editcuisine').val(data.Cuisine)
+        $('#inpeditnameofdish').val(data.nameofdish)
+        $('#editcuisine').val(data.cuisine)
        $('#showimageedit').append($(`<img src="${data.image}" class="img-fluid" alt="Responsive image"></img>`))
         let arraying = data.ingredients.split(",")
-        let limit = 0
+       
         for( let i=0;i<arraying.length;i++){
-           limit += arraying[i].trim().length
+         
             $('#ulingredientsedit').append($(`
-            <li style="display:inline;background-color:yellow;">${arraying[i]}</li>
+            <li style="display:inline;background-color:white;">${arraying[i]} </li>
             `))
         }
-        $('#calculate2').text(limit)
+      
         let arraysteps = data.method.split(",")
-        let limitee = 0
+      
         for(let i=0;i<arraysteps.length;i++){
-            limitee += arraysteps[i].trim().length
-            $('#calculate3').text(limitee)
-
+            
+          
             $("#olstepsedit").append($(`
-            <li style="background-color:yellow;border-bottom:1px solid black"><button type="button"  onclick="up(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-up-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <li style="background-color:white;border-bottom:1px solid black"><button type="button"  onclick="up(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-up-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm3.354 8.354a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 6.207V11a.5.5 0 0 1-1 0V6.207L5.354 8.354z"/>
           </svg></button><button type="button" onclick="down(this)" style="background-color:transparent;padding:0px;border:0px;"><svg style="background-color:transparent;" class="bi bi-arrow-down-square-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 5a.5.5 0 0 0-1 0v4.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V5z"/>
-        </svg></button> <t style="background-color:yellow;">${arraysteps[i]} </t></li>
+        </svg></button> <t>${arraysteps[i]} </t></li>
             `))
         }
         $("#ulingredientsedit").on("click","li",function() {
-            let length = $(this).text().trim().length
-    console.log(length)
-    let initial = parseInt($('#calculate2').text())
-    initial -= length
-    $('#calculate2').text(initial)
+            
             $(this).remove();
             })
             $("#olstepsedit").on("click","li t",function() {
                 
-    let length = $(this).text().trim().length
-    console.log(length)
-    let initial = parseInt($('#calculate3').text())
-    initial -= length
-    $('#calculate3').text(initial)
+   
             $(this).parent().remove();
             })
             $('#inprecipeimageedit').filename = data.image
 
             $('#btnuploadedit').click(()=>{
                 btnuploadcount++
-                console.log(btnuploadcount)
+             
                 
                 let file = $('#inprecipeimageedit')[0].files[0]
                 if(file == undefined){
@@ -833,7 +792,7 @@ function edit(id){
                 $(this).remove()
                 $('#inprecipeimageedit').val("")
                 $('#shareedit').hide()
-                console.log($('#inprecipeimageedit').val())
+               
                 
                 })
                 $('#inpeditingredient').keypress((e)=>{
@@ -862,10 +821,7 @@ function edit(id){
           <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 5a.5.5 0 0 0-1 0v4.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V5z"/>
         </svg></button> <t>${step}</t> </li>
                         `))
-                        let length = $('#inpmethodedit').val().length
-let initial = parseInt($('#calculate3').text())
-initial += length
-$('#calculate3').text(initial)
+
 
                         $('#inpmethodedit').val("")
                         }
@@ -883,15 +839,9 @@ $('#calculate3').text(initial)
                             return
                             }
                             $('#ulingredientsedit').append($(`
-                            <li style="background-color:yellow;display:inline;">${Ingredient}(${Quantity} ${unit})</li>
+                            <li style="background-color:white;display:inline;">${Ingredient}(${Quantity} ${unit}) </li>
                             `))
-                            let initial = 0
-$('#ulingredientsedit li').each(function(index){
-     initial += ($(this).text().trim().length)
-    })
 
-
-$('#calculate2').text(initial)
                             $('#inpeditingredient').val("")
                             $('#inpquantityedit').val("")
                             
@@ -934,11 +884,7 @@ $('#calculate2').text(initial)
                     formData.append("username",currentuser)
                     formData.append("id",data.id)
                     
-                    console.log(formData.getAll("ingredients"))
-                    console.log(formData.getAll("steps"))
-                    console.log(formData.get("cuisine"))
-                    console.log(formData.get("nameofdish"))
-                    console.log(formData.get("type"))
+                 
                     $.ajax({
                     url: '/editrecipe',
                     type: 'POST',
@@ -987,17 +933,17 @@ socket.on("notificationrecipe",(data)=>{
     $('#audio').trigger("play")
     $('#ulnotificationrecipes').prepend($(`<li><t style="color: #000000;font-weight:bolder;background-color:yellow;border-bottom:2px solid black">${data.user}  Posted A Recipe <img src="${data.userimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
     
-    $('#divposts').prepend($(`<div id="posts${data.details.id}"></div>`))
+    $('#divposts').prepend($(`<div id="posts${data.details.id}" style="border-bottom:2px solid white"></div><br>`))
 
     $('#posts'+data.details.id).append($(`
-    <div class="divname${data.details.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.details.uploaderimage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.details.id}" style="font-weight:bold;color:white;">${data.details.Uploader} </t></div>
-    <div class="divtime${data.details.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.details.Date} at ${data.details.Time}</div>
+    <div class="divname${data.details.id}" style="font-size:15pt;font-family: monospace;font-weight:bold;padding:5px;color:white"><img src="${data.details.uploaderimage}" style="height:40px;width:40px;border-radius:50%;"></img>  <t class="tname${data.details.id}" style="font-weight:bold;color:white;">${data.details.uploader} </t></div>
+    <div class="divtime${data.details.id}" style="font-size:12pt;font-family: monospace;color:white;padding:5px;">${data.details.date} at ${data.details.time}</div>
     
-    <div class="divrecipe${data.details.id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color:white;padding:5px;">${data.details.NameOfDish}</div>
+    <div class="divrecipe${data.details.id}" style="font-size:18pt;font-family: monospace;font-weight:bolder;color:white;padding:5px;">${data.details.nameofdish}</div>
     
     `))
-    let arrayofsteps = data.details.Method.split(",")
-    let arrayofingredients = data.details.Ingredients.split(",")
+    let arrayofsteps = data.details.method.split(",")
+    let arrayofingredients = data.details.ingredients.split(",")
     $('#posts'+data.details.id).append($(`
     <br>
     <div style="color: white;padding:5px;">
@@ -1020,18 +966,18 @@ socket.on("notificationrecipe",(data)=>{
     $('.ulmethod'+data.details.id).append($(`<li style="color:white;">${arrayofsteps[i]}</li>`))
     
     }
-    $('#posts'+data.details.id).append($(`<br><img src="${data.details.Image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
+    $('#posts'+data.details.id).append($(`<br><img src="${data.details.image}" style="height:300px;width:300px;margin-left:110px;border:2px solid black;"></img>`))
     
     $('#posts'+data.details.id).append($(`
-    <br><br><div class="commentbox${data.details.id}" style="height:200px;border:2px solid black;color: white;">
+    <br><br><div class="commentbox${data.details.id}" style="height:200px;border:2px solid white;color: white;border-radius:25px">
     <t style="margin-left:230px;color: white;color:white;">Comments</t><br>
     <ul class="comments${data.details.id}" style="height:120px;overflow-y:scroll;list-style-type:none;padding-left:10px;color: white;">
     </ul>
-    <input class="inpcomment${data.details.id}" style="width:450px;margin-left:10px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
+    <input class="inpcomment${data.details.id}" style="width:450px;margin-left:20px;color:black;text-align:center" placeholder="Write A Comment About This Dish.....">
     <button class="btncomment${data.details.id},btn btn-success btn-xsm" onclick="Send
     (this)" >SEND</button>
     </div><br>
-    <div style="height:2px;background-color:white;padding:0px;"></div><br>
+  
     
     `))
     
@@ -1041,7 +987,7 @@ socket.on("notificationrecipe",(data)=>{
     }) --}}*/
     
     $.post('/getcomments',{id : data.details.id},(data)=>{
-    console.log(data)
+  
     for(let i=0;i<data.length;i++){
         if(data[i].Deleted){
             continue
@@ -1070,7 +1016,7 @@ socket.on("notifyfriend",(data)=>{
     $('#ulnotificationfriends').prepend($(`<li style="border-bottom:2px solid black;"><t style="color: #000000;font-weight:bolder;background-color:yellow;">${data.sender} ${data.msg} <img src="${data.image}" style="width:30px;height:30px;border-radius:50%";></img> </li>`))
 })
 $.post("/getnotification",{user: currentuser},(data)=>{
-    console.log(data)
+ 
     for(let i=0;i<data.length;i++){
         $('#ulnotificationfriends').prepend($(`<li style="border-bottom:2px solid black"><t style="color: #000000;font-weight:bolder;">${data[i].sender} ${data[i].notification} on ${data[i].date} at ${data[i].time} <img src="${data[i].senderimage}" style="width:30px;height:30px;border-radius:50%";></img></li>`))
     }
@@ -1093,12 +1039,12 @@ function sendmessage(name){
 }
 socket.on("msgreceive",(data)=>{
   
-    // alert("You receievd a Message From " + data.Sender)
-    console.log(arrayoffriends)
+
+ 
    let index = arrayoffriends.findIndex(x => x.friend === data.sender)
-   console.log(index)
+  
    if(arrayoffriends[index].status){
-       console.log("openend your chat")
+      
        $('#count'+data.sender).hide()
        $('#audio2').trigger("play")
 
@@ -1138,7 +1084,7 @@ function sendmessage2(id){
 }
 
 function showrecipes(id){
- console.log(arrayoffriends[0])
+
  countclick =0;
  clickcounter =0;
  clicknumber =0;
@@ -1146,17 +1092,16 @@ function showrecipes(id){
  
 
 
- console.log(onemorecounter)
+
     onemorecounter++
-    console.log(onemorecounter)
+
     if(onemorecounter%2==0){
         let name = id.split(",")[0]
        
     let index = arrayoffriends.findIndex(x => x.friend === name)
-    console.log(index)
+ 
        arrayoffriends[index].status = false
-       console.log(arrayoffriends[index])
-
+      
         $('#count'+name).text("0")
         $('#divposts').show()
         $('#divfriends').empty()
@@ -1182,7 +1127,7 @@ function showrecipes(id){
         let srcimage = id.split(",")[1]
      
     let index = arrayoffriends.findIndex(x => x.friend === name)
-    console.log(index)
+  
     for(let i=0;i<arrayoffriends.length;i++){
         if(i==index){
             arrayoffriends[index].status = true
@@ -1191,7 +1136,7 @@ function showrecipes(id){
         }
     }
       
-       console.log(arrayoffriends[index])
+      
         
         $('#count'+name).hide()
    
@@ -1246,7 +1191,7 @@ firsttime = data[i].date
 
 function Delete(id){
     let divid = id.split("btn")[1].trim()
-    console.log(divid)
+ 
     let name = id.split(",")[0]
     name = name.split("btn")[1]
     let ans = confirm("You Want to remove " + name + " from your Friendlist ??")
@@ -1293,7 +1238,7 @@ clicknumber = 0;
 onemorecounter = 0;
 countclick = 0;
     counterr ++ 
-    console.log(counterr)
+
     if(counterr%2==0){
         
           
@@ -1327,7 +1272,7 @@ function donthoverthis(id){
 
 socket.on("loggedout",()=>{
     $.post('/logout',(data)=>{
-        console.log(data)
+ 
         if(data=="done"){
         window.location.replace('/')
         }
@@ -1342,7 +1287,7 @@ $('#btnlogout').click(()=>{
             socket.emit("logout",{user: currentuser})
         }else{
         $.post('/logout',(data)=>{
-            console.log(data)
+            
             if(data=="done"){
             window.location.replace('/')
             }

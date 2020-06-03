@@ -239,27 +239,49 @@ io.on('connection',(socket)=>{
 
     socket.on('getrecipesoffriends',(data)=>{
        console.log(data)
-     
+       let recipes = []
      for(let i=0;i<data.length;i++){
-        let recipes = []
+     
         const query = {text: 'select*from recipes where uploader = $1',values:[data[i]]}
-        client.query(query)
-        .then((recipe)=>{
+        client.query(query,(err,recipe)=>{
             if(recipe.rows){
-                console.log(recipe.rows)
-                for(let i=0;i<recipe.rows.length;i++){
+                
+                for(let j=0;j<recipe.rows.length;j++){
 
-                    recipes.push(recipe.rows[i].id)
+                    recipes.push(recipe.rows[j].id)
 
                 }
-                
-                socket.emit('foundrecipes',recipes)
+                if(i == data.length - 1){
+                    function compare(a,b){
+                        return a-b
+                    }
+                    let sorted = recipes.sort(compare)
+                    console.log(sorted)
+                     socket.emit('foundrecipes',sorted)
+                }
+               
+               
                
             }
         })
+        // client.query(query)
+        // .then((recipe)=>{
+        //     if(recipe.rows){
+        //         console.log(recipe.rows)
+        //         for(let i=0;i<recipe.rows.length;i++){
+
+        //             recipes.push(recipe.rows[i].id)
+
+        //         }
+                
+        //         socket.emit('foundrecipes',recipes)
+               
+        //     }
+        // })
       
         
      }
+ 
 
     })
     // returning recipes for given id
@@ -327,7 +349,7 @@ io.on('connection',(socket)=>{
 client.query(query2)
 .then((friends)=>{
     for(let i=0;i<friends.rows.length;i++){
-        io.to(friends.rows[i].friendname).emit("notificationrecipe",(data))
+        io.to(friends.rows[i].friendname).emit("notificationrecipe",data)
     }
 })
 
@@ -406,6 +428,7 @@ app.post('/getallusers',(req,res)=>{
         for(let i=0;i<users.rows.length;i++){
             userlistserver.push(users.rows[i].username + "=" + users.rows[i].dp)
         }
+        console.log(userlistserver)
         res.send(userlistserver)
     })
 
@@ -461,7 +484,7 @@ var storagerecipe = multer.diskStorage({
                     return
                 }else{
 
-                const query = {text:'insert into recipes(uploader,nameofdish,type,ingredients,method,image,cuisine,time,date,deleted,uploaderimage) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+                const query = {text:'insert into recipes(uploader,nameofdish,type,ingredients,method,image,cuisine,time,date,deleted,uploaderimage) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning uploader,nameofdish,type,ingredients,method,image,cuisine,time,date,deleted,uploaderimage',
             values:[req.body.username,req.body.nameofdish,req.body.type,req.body.ingredients.toString().trim(),req.body.steps.toString().trim(), req.file.filename,req.body.cuisine,new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),new Date().getDate() + "/" + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),false,req.body.uploaderimage]
             }
             client.query(query)
