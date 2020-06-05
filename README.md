@@ -12,4 +12,4 @@ Its friends can give their reviews about that recipe in the comment's section . 
 <b>Multer - Handling Image Uploads<br>
 <b>Express - Server 
 # Deployed through Heroku
-Project Link - <a href="project-cook-book.herokuapp.com">project-cook-book.herokuapp.com</a>
+Project Link - <a href="http://project-cook-book.herokuapp.com">project-cook-book.herokuapp.com</a>
